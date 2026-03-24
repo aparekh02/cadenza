@@ -37,9 +37,7 @@
 ## What is Cadenza?
 <div align="center">
 
-<video src="demo.mov" width="600" controls autoplay loop muted>
-  Your browser does not support the video tag.
-</video>
+<img src="demo.gif" alt="Cadenza Demo" width="600">
 
 </div>
 
