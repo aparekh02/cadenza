@@ -1,0 +1,42 @@
+<mujoco model="Kondo khr3hv scene">
+  <include file="kondo_khr3hv.xml"/>
+
+  <statistic center="0.3 0 0.3" extent="0.8" meansize="0.08"/>
+
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.1 0.1 0.1" specular="0 0 0"/>
+    <global azimuth="120" elevation="-20"/>
+  </visual>
+
+    <asset>
+        <texture type="skybox" builtin="gradient" rgb1=".3 .5 .7" rgb2="0 0 0" width="512" height="512"/>
+        <texture name="grid" type="2d" builtin="checker" width="512" height="512" rgb1=".1 .2 .3" rgb2=".2 .3 .4"/>
+        <material name="grid" texture="grid" texrepeat="1 1" texuniform="true" reflectance=".2"/>
+    </asset>
+
+
+  <worldbody>
+	 <geom name="hard-plane" type="plane" pos="0 0 -0.0" size="10.5 0.5 0.0001" material="grid" contype="1"  conaffinity="1"  solref="-1000 -1000" solimp="0.0 0.95 0.0005 0.5 2" priority="1" />
+<!--	<geom name="def-plane" type="plane" pos="0 0 -0.0" size="10.5 0.5 0.0001" material="grid" contype="1"  conaffinity="1"  solref="-10000 -100" solimp="0.0 0.95 0.012 0.5 2" priority="1" />-->
+
+        <camera name="mycam1" pos="1.530 -0.516 0.147" xyaxes="0.282 0.959 -0.000 -0.161 0.047 0.986"/>
+        <camera name="mycam2" pos="2.360 0.558 0.298" xyaxes="-0.184 0.983 0.000 -0.178 -0.033 0.984"/>
+
+        <light pos="0 0 1.5" directional="true"/>
+
+        <!--Add three sites to robot
+				 <site name="waist_site" type="sphere" size="0.0025" pos="0.01 0 -0.05" rgba="1 0 0 1" />
+                                    <site name="left_foot_site" type="sphere" size="0.0025" pos="0 0.0125 -0.02655" rgba="1 0 0 1" />
+                                    <site name="right_foot_site" type="sphere" size="0.0025" pos="0 -0.0125 -0.02655" rgba="1 0 0 1" />
+	-->
+
+    <body name="COP" pos="0.5 0 .5" quat="0 1 0 0" mocap="true">
+      <geom type="sphere"  mass="0" size=".005" contype="0" conaffinity="0" rgba=".6 .3 .3 .5"/>
+    </body>
+
+  <body name="COM_des" pos="0 0 .5" quat="0 1 0 0" mocap="true">
+      <geom type="sphere"  mass="0" size=".01" contype="0" conaffinity="0" rgba="1 0 0 1"/>
+    </body>
+
+  </worldbody>
+</mujoco>

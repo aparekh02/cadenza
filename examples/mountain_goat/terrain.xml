@@ -1,0 +1,271 @@
+<mujoco model="mountain_goat">
+  <!--
+    Mountain Goat — Complex terrain course for Go1 navigation.
+    Robot starts at origin facing -x. Course extends along -x axis:
+      1. Flat start (0 to -1m)
+      2. Rocky upslope (-1 to -4m, rises 12cm)
+      3. Stone staircase (-4 to -5m, 3 steps of 5cm each)
+      4. Narrow elevated ridge (-5 to -7m, at 27cm elevation)
+      5. Downslope (-7 to -9.5m, descends back to ground)
+      6. Ice patch (-10 to -11m, low friction)
+      7. Finish area (-11 to -12.5m)
+  -->
+
+  <compiler angle="radian" autolimits="true"/>
+  <option gravity="0 0 -9.81" timestep="0.002" iterations="50" tolerance="1e-10"
+          cone="elliptic" impratio="100"/>
+
+  <default>
+    <joint damping="2.0" frictionloss="0.2" armature="0.01"/>
+    <geom contype="1" conaffinity="1" condim="3"
+          friction="0.6 0.02 0.001" solref="0.005 1" solimp="0.98 0.99 0.001"/>
+    <position kp="300" ctrlrange="-3.14 3.14" forcelimited="true" forcerange="-33.5 33.5"/>
+    <default class="hip_joint">
+      <joint damping="1.0" frictionloss="0.2" armature="0.01"/>
+    </default>
+    <default class="foot">
+      <geom condim="6" friction="0.8 0.02 0.01"
+            solimp="0.015 1 0.023" solref="0.005 1"/>
+    </default>
+  </default>
+
+  <asset>
+    <texture type="skybox" builtin="gradient"
+             rgb1="0.45 0.60 0.80" rgb2="0.08 0.10 0.20" width="512" height="512"/>
+    <texture name="dirt" type="2d" builtin="flat"
+             rgb1="0.28 0.22 0.14" width="64" height="64"/>
+    <material name="ground"     rgba="0.30 0.25 0.15 1" reflectance="0.02"/>
+    <material name="rock"       rgba="0.48 0.42 0.35 1"/>
+    <material name="stone"      rgba="0.58 0.55 0.50 1"/>
+    <material name="ridge_mat"  rgba="0.52 0.44 0.32 1"/>
+    <material name="ice_mat"    rgba="0.78 0.88 0.96 0.9"/>
+    <material name="boulder_mat" rgba="0.38 0.35 0.30 1"/>
+    <material name="body_mat"   rgba="0.28 0.28 0.35 1"/>
+    <material name="leg_mat"    rgba="0.22 0.22 0.28 1"/>
+  </asset>
+
+  <worldbody>
+    <!-- Mountain lighting — bright sun with blue fill -->
+    <light name="sun"  pos="4 -6 10" dir="-0.3 0.4 -1" diffuse="1.0 0.95 0.85" castshadow="true"/>
+    <light name="fill" pos="-8 4 6"  dir="0.5 -0.3 -1" diffuse="0.25 0.30 0.40" castshadow="false"/>
+
+    <!-- Ground plane -->
+    <geom name="floor" type="plane" size="30 30 0.1" material="ground"
+          condim="6" friction="0.8 0.02 0.01"/>
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!--  TERRAIN COURSE (robot starts at origin, walks toward -x)        -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+
+    <!-- Start marker (green ring on ground) -->
+    <geom name="start_ring" type="cylinder" size="0.4 0.003" pos="0 0 0.003"
+          rgba="0.2 0.8 0.3 0.4" contype="0" conaffinity="0"/>
+
+    <!-- ── Section 2: Rocky upslope (x=-1 to x=-4, 6 steps, 2cm rise each) ── -->
+    <geom name="ramp_0" type="box" size="0.25 1.0 0.010" pos="-1.25 0 0.010" material="rock" friction="0.7 0.02 0.001"/>
+    <geom name="ramp_1" type="box" size="0.25 1.0 0.020" pos="-1.75 0 0.020" material="rock" friction="0.7 0.02 0.001"/>
+    <geom name="ramp_2" type="box" size="0.25 1.0 0.030" pos="-2.25 0 0.030" material="rock" friction="0.7 0.02 0.001"/>
+    <geom name="ramp_3" type="box" size="0.25 1.0 0.040" pos="-2.75 0 0.040" material="rock" friction="0.7 0.02 0.001"/>
+    <geom name="ramp_4" type="box" size="0.25 1.0 0.050" pos="-3.25 0 0.050" material="rock" friction="0.7 0.02 0.001"/>
+    <geom name="ramp_5" type="box" size="0.25 1.0 0.060" pos="-3.75 0 0.060" material="rock" friction="0.7 0.02 0.001"/>
+
+    <!-- Decorative boulders along upslope (non-blocking, offset from path) -->
+    <geom name="boulder_1" type="sphere"    size="0.09"            pos="-1.4  0.85 0.09"  material="boulder_mat"/>
+    <geom name="boulder_2" type="ellipsoid" size="0.14 0.10 0.07"  pos="-2.6 -0.90 0.07"  material="boulder_mat"/>
+    <geom name="boulder_3" type="sphere"    size="0.07"            pos="-3.1  0.75 0.12"  material="boulder_mat"/>
+    <geom name="boulder_4" type="ellipsoid" size="0.11 0.08 0.06"  pos="-3.8 -0.70 0.12"  material="boulder_mat"/>
+
+    <!-- ── Section 3: Stone staircase (x=-4 to x=-5, 3 steps of 15cm) ── -->
+    <!-- Each box spans from z=0 to its top surface -->
+    <geom name="stair_1" type="box" size="0.165 0.8 0.135" pos="-4.17 0 0.135" material="stone" friction="0.85 0.02 0.001"/>
+    <geom name="stair_2" type="box" size="0.165 0.8 0.210" pos="-4.50 0 0.210" material="stone" friction="0.85 0.02 0.001"/>
+    <geom name="stair_3" type="box" size="0.165 0.8 0.285" pos="-4.83 0 0.285" material="stone" friction="0.85 0.02 0.001"/>
+
+    <!-- ── Section 4: Narrow elevated ridge (x=-5 to x=-7) ── -->
+    <geom name="ridge" type="box" size="1.0 0.30 0.285" pos="-6.0 0 0.285"
+          material="ridge_mat" friction="0.75 0.02 0.001"/>
+    <!-- Danger markers on ridge edges (visual only) -->
+    <geom name="edge_L" type="box" size="1.0 0.015 0.004" pos="-6.0  0.31 0.574"
+          rgba="0.85 0.25 0.15 0.7" contype="0" conaffinity="0"/>
+    <geom name="edge_R" type="box" size="1.0 0.015 0.004" pos="-6.0 -0.31 0.574"
+          rgba="0.85 0.25 0.15 0.7" contype="0" conaffinity="0"/>
+    <!-- Drop-off visual (dark areas beside ridge) -->
+    <geom name="drop_L" type="box" size="1.0 0.5 0.002" pos="-6.0  0.85 0.002"
+          rgba="0.12 0.10 0.08 0.6" contype="0" conaffinity="0"/>
+    <geom name="drop_R" type="box" size="1.0 0.5 0.002" pos="-6.0 -0.85 0.002"
+          rgba="0.12 0.10 0.08 0.6" contype="0" conaffinity="0"/>
+
+    <!-- ── Section 5: Downslope (x=-7 to x=-9.5, 5 steps descending) ── -->
+    <geom name="down_0" type="box" size="0.25 1.0 0.228" pos="-7.25 0 0.228" material="rock" friction="0.7 0.02 0.001"/>
+    <geom name="down_1" type="box" size="0.25 1.0 0.171" pos="-7.75 0 0.171" material="rock" friction="0.7 0.02 0.001"/>
+    <geom name="down_2" type="box" size="0.25 1.0 0.114" pos="-8.25 0 0.114" material="rock" friction="0.7 0.02 0.001"/>
+    <geom name="down_3" type="box" size="0.25 1.0 0.057" pos="-8.75 0 0.057" material="rock" friction="0.7 0.02 0.001"/>
+    <geom name="down_4" type="box" size="0.25 1.0 0.0225" pos="-9.25 0 0.0225" material="rock" friction="0.7 0.02 0.001"/>
+
+    <!-- More boulders along downslope -->
+    <geom name="boulder_5" type="sphere"    size="0.08"           pos="-7.5  0.80 0.08" material="boulder_mat"/>
+    <geom name="boulder_6" type="ellipsoid" size="0.10 0.07 0.05" pos="-8.8 -0.75 0.05" material="boulder_mat"/>
+
+    <!-- ── Section 6: Ice patch (x=-10 to x=-11) ── -->
+    <geom name="ice" type="box" size="0.50 1.0 0.004" pos="-10.5 0 0.004"
+          material="ice_mat" friction="0.12 0.005 0.001"/>
+    <!-- Frost visual around ice -->
+    <geom name="frost_L" type="box" size="0.60 0.15 0.002" pos="-10.5  1.05 0.002"
+          rgba="0.85 0.92 0.98 0.3" contype="0" conaffinity="0"/>
+    <geom name="frost_R" type="box" size="0.60 0.15 0.002" pos="-10.5 -1.05 0.002"
+          rgba="0.85 0.92 0.98 0.3" contype="0" conaffinity="0"/>
+
+    <!-- ── Section 7: Finish area (x=-11 to x=-12.5) ── -->
+    <geom name="finish_pad" type="box" size="0.75 1.0 0.003" pos="-11.75 0 0.003"
+          rgba="0.15 0.70 0.25 0.5" contype="0" conaffinity="0"/>
+    <!-- Summit flag -->
+    <geom name="flagpole" type="cylinder" size="0.015 0.35" pos="-12.0 0 0.35"
+          rgba="0.75 0.20 0.15 1" contype="0" conaffinity="0"/>
+    <geom name="flag" type="box" size="0.10 0.004 0.05" pos="-11.89 0 0.65"
+          rgba="0.90 0.20 0.10 1" contype="0" conaffinity="0"/>
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!--  SCATTERED MOUNTAIN SCENERY (non-collision decorations)          -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- Large background boulders -->
+    <geom type="sphere"    size="0.25" pos="-3.0  2.5 0.25"  material="boulder_mat" contype="0" conaffinity="0"/>
+    <geom type="ellipsoid" size="0.35 0.25 0.20" pos="-6.5 -2.0 0.20" material="boulder_mat" contype="0" conaffinity="0"/>
+    <geom type="sphere"    size="0.18" pos="-9.0  2.2 0.18"  material="boulder_mat" contype="0" conaffinity="0"/>
+    <!-- Small vegetation tufts -->
+    <geom type="sphere" size="0.035" pos="-1.8  1.3 0.035" rgba="0.22 0.38 0.18 1" contype="0" conaffinity="0"/>
+    <geom type="sphere" size="0.025" pos="-4.2 -1.1 0.025" rgba="0.25 0.40 0.20 1" contype="0" conaffinity="0"/>
+    <geom type="sphere" size="0.030" pos="-7.8  1.4 0.030" rgba="0.20 0.35 0.16 1" contype="0" conaffinity="0"/>
+    <geom type="sphere" size="0.040" pos="-10.0 1.5 0.040" rgba="0.22 0.36 0.18 1" contype="0" conaffinity="0"/>
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!--  ROBOT                                                           -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <body name="trunk" pos="0 0 0.27">
+      <freejoint name="root"/>
+      <geom name="trunk" type="box" size="0.1881 0.0475 0.048"
+            mass="9.041" material="body_mat"/>
+      <site name="imu" pos="0 0 0" size="0.005"/>
+      <geom name="head_marker" type="sphere" size="0.03" pos="-0.22 0 0.04"
+            rgba="0.1 0.95 0.3 1" contype="0" conaffinity="0" mass="0.001"/>
+
+      <!-- FL leg -->
+      <body name="FL_hip" pos="0.1881 0.0472 0">
+        <joint name="FL_hip_joint" type="hinge" axis="1 0 0"
+               range="-0.863 0.863" class="hip_joint"/>
+        <geom type="capsule" size="0.044 0.020" pos="0 0.040 0"
+              euler="1.5708 0 0" mass="0.591" material="body_mat"/>
+        <body name="FL_thigh" pos="0 0.0838 0">
+          <joint name="FL_thigh_joint" type="hinge" axis="0 -1 0"
+                 range="-0.686 4.501"/>
+          <geom type="capsule" size="0.025" fromto="0 0 0 0 0 -0.213"
+                mass="0.921" material="leg_mat" rgba="0.30 0.55 0.90 1"/>
+          <body name="FL_calf" pos="0 0 -0.213">
+            <joint name="FL_calf_joint" type="hinge" axis="0 -1 0"
+                   range="-2.818 -0.888"/>
+            <geom type="capsule" size="0.019" fromto="0 0 0 0 0 -0.213"
+                  mass="0.135" material="leg_mat"/>
+            <body name="FL_foot" pos="0 0 -0.213">
+              <geom name="FL_foot_geom" type="sphere" size="0.0165"
+                    mass="0.06" rgba="0.30 0.55 0.90 1" class="foot"/>
+            </body>
+          </body>
+        </body>
+      </body>
+
+      <!-- FR leg -->
+      <body name="FR_hip" pos="0.1881 -0.0472 0">
+        <joint name="FR_hip_joint" type="hinge" axis="-1 0 0"
+               range="-0.863 0.863" class="hip_joint"/>
+        <geom type="capsule" size="0.044 0.020" pos="0 -0.040 0"
+              euler="1.5708 0 0" mass="0.591" material="body_mat"/>
+        <body name="FR_thigh" pos="0 -0.0838 0">
+          <joint name="FR_thigh_joint" type="hinge" axis="0 -1 0"
+                 range="-0.686 4.501"/>
+          <geom type="capsule" size="0.025" fromto="0 0 0 0 0 -0.213"
+                mass="0.921" material="leg_mat" rgba="0.90 0.33 0.33 1"/>
+          <body name="FR_calf" pos="0 0 -0.213">
+            <joint name="FR_calf_joint" type="hinge" axis="0 -1 0"
+                   range="-2.818 -0.888"/>
+            <geom type="capsule" size="0.019" fromto="0 0 0 0 0 -0.213"
+                  mass="0.135" material="leg_mat"/>
+            <body name="FR_foot" pos="0 0 -0.213">
+              <geom name="FR_foot_geom" type="sphere" size="0.0165"
+                    mass="0.06" rgba="0.90 0.33 0.33 1" class="foot"/>
+            </body>
+          </body>
+        </body>
+      </body>
+
+      <!-- RL leg -->
+      <body name="RL_hip" pos="-0.1881 0.0472 0">
+        <joint name="RL_hip_joint" type="hinge" axis="1 0 0"
+               range="-0.863 0.863" class="hip_joint"/>
+        <geom type="capsule" size="0.044 0.020" pos="0 0.040 0"
+              euler="1.5708 0 0" mass="0.591" material="body_mat"/>
+        <body name="RL_thigh" pos="0 0.0838 0">
+          <joint name="RL_thigh_joint" type="hinge" axis="0 -1 0"
+                 range="-0.686 4.501"/>
+          <geom type="capsule" size="0.025" fromto="0 0 0 0 0 -0.213"
+                mass="0.921" material="leg_mat" rgba="0.30 0.90 0.75 1"/>
+          <body name="RL_calf" pos="0 0 -0.213">
+            <joint name="RL_calf_joint" type="hinge" axis="0 -1 0"
+                   range="-2.818 -0.888"/>
+            <geom type="capsule" size="0.019" fromto="0 0 0 0 0 -0.213"
+                  mass="0.135" material="leg_mat"/>
+            <body name="RL_foot" pos="0 0 -0.213">
+              <geom name="RL_foot_geom" type="sphere" size="0.0165"
+                    mass="0.06" rgba="0.30 0.90 0.75 1" class="foot"/>
+            </body>
+          </body>
+        </body>
+      </body>
+
+      <!-- RR leg -->
+      <body name="RR_hip" pos="-0.1881 -0.0472 0">
+        <joint name="RR_hip_joint" type="hinge" axis="-1 0 0"
+               range="-0.863 0.863" class="hip_joint"/>
+        <geom type="capsule" size="0.044 0.020" pos="0 -0.040 0"
+              euler="1.5708 0 0" mass="0.591" material="body_mat"/>
+        <body name="RR_thigh" pos="0 -0.0838 0">
+          <joint name="RR_thigh_joint" type="hinge" axis="0 -1 0"
+                 range="-0.686 4.501"/>
+          <geom type="capsule" size="0.025" fromto="0 0 0 0 0 -0.213"
+                mass="0.921" material="leg_mat" rgba="0.90 0.65 0.30 1"/>
+          <body name="RR_calf" pos="0 0 -0.213">
+            <joint name="RR_calf_joint" type="hinge" axis="0 -1 0"
+                   range="-2.818 -0.888"/>
+            <geom type="capsule" size="0.019" fromto="0 0 0 0 0 -0.213"
+                  mass="0.135" material="leg_mat"/>
+            <body name="RR_foot" pos="0 0 -0.213">
+              <geom name="RR_foot_geom" type="sphere" size="0.0165"
+                    mass="0.06" rgba="0.90 0.65 0.30 1" class="foot"/>
+            </body>
+          </body>
+        </body>
+      </body>
+
+    </body><!-- /trunk -->
+  </worldbody>
+
+  <actuator>
+    <position name="FL_hip"   joint="FL_hip_joint"   ctrlrange="-0.80 0.80"   forcelimited="true" forcerange="-23.7 23.7"/>
+    <position name="FL_thigh" joint="FL_thigh_joint" ctrlrange="-0.50 2.50"   forcelimited="true" forcerange="-23.7 23.7"/>
+    <position name="FL_calf"  joint="FL_calf_joint"  ctrlrange="-2.75 -0.60"  forcelimited="true" forcerange="-35.55 35.55"/>
+    <position name="FR_hip"   joint="FR_hip_joint"   ctrlrange="-0.80 0.80"   forcelimited="true" forcerange="-23.7 23.7"/>
+    <position name="FR_thigh" joint="FR_thigh_joint" ctrlrange="-0.50 2.50"   forcelimited="true" forcerange="-23.7 23.7"/>
+    <position name="FR_calf"  joint="FR_calf_joint"  ctrlrange="-2.75 -0.60"  forcelimited="true" forcerange="-35.55 35.55"/>
+    <position name="RL_hip"   joint="RL_hip_joint"   ctrlrange="-0.80 0.80"   forcelimited="true" forcerange="-23.7 23.7"/>
+    <position name="RL_thigh" joint="RL_thigh_joint" ctrlrange="-0.50 2.50"   forcelimited="true" forcerange="-23.7 23.7"/>
+    <position name="RL_calf"  joint="RL_calf_joint"  ctrlrange="-2.75 -0.60"  forcelimited="true" forcerange="-35.55 35.55"/>
+    <position name="RR_hip"   joint="RR_hip_joint"   ctrlrange="-0.80 0.80"   forcelimited="true" forcerange="-23.7 23.7"/>
+    <position name="RR_thigh" joint="RR_thigh_joint" ctrlrange="-0.50 2.50"   forcelimited="true" forcerange="-23.7 23.7"/>
+    <position name="RR_calf"  joint="RR_calf_joint"  ctrlrange="-2.75 -0.60"  forcelimited="true" forcerange="-35.55 35.55"/>
+  </actuator>
+
+  <keyframe>
+    <key name="home" qpos="0 0 0.27 1 0 0 0
+                           0 0.9 -1.8  0 0.9 -1.8
+                           0 0.9 -1.8  0 0.9 -1.8"/>
+  </keyframe>
+
+</mujoco>

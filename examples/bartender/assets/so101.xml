@@ -1,0 +1,108 @@
+<!-- SO-101 Robot Arm — 6-DOF position-controlled arm with gripper.
+
+     Joints: shoulder_pan (Z), shoulder_lift (Y), elbow_flex (Y),
+             wrist_flex (Y), wrist_roll (Z), gripper (hinge).
+
+     Link lengths: base 0.05m, upper_arm 0.10m, forearm 0.10m, hand 0.05m.
+     Total mass: ~0.48 kg.  Position-controlled servos (~25 kg-cm each).
+-->
+<mujoco model="so101">
+  <compiler angle="radian" autolimits="true"/>
+
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicit"/>
+
+  <default>
+    <joint damping="0.5" armature="0.01"/>
+    <geom contype="1" conaffinity="1" condim="4" friction="0.8 0.02 0.01"/>
+    <position kp="50" ctrlrange="-3.14159 3.14159"/>
+  </default>
+
+  <worldbody>
+    <!-- Base — fixed to world -->
+    <body name="base_link" pos="0 0 0">
+      <geom name="base_geom" type="cylinder" size="0.03 0.025"
+            rgba="0.3 0.3 0.3 1" mass="0.1"/>
+
+      <!-- Shoulder pan — rotates around Z -->
+      <body name="shoulder_pan_link" pos="0 0 0.05">
+        <joint name="shoulder_pan" type="hinge" axis="0 0 1"
+               range="-3.14 3.14"/>
+        <geom name="shoulder_pan_geom" type="cylinder" size="0.025 0.02"
+              rgba="0.2 0.4 0.7 1" mass="0.06"/>
+
+        <!-- Shoulder lift — rotates around Y -->
+        <body name="shoulder_lift_link" pos="0 0 0.04">
+          <joint name="shoulder_lift" type="hinge" axis="0 1 0"
+                 range="-1.57 2.0"/>
+          <geom name="shoulder_lift_geom" type="capsule"
+                fromto="0 0 0 0 0 0.10"
+                size="0.018" rgba="0.5 0.5 0.5 1" mass="0.08"/>
+
+          <!-- Elbow flex -->
+          <body name="elbow_flex_link" pos="0 0 0.10">
+            <joint name="elbow_flex" type="hinge" axis="0 1 0"
+                   range="-2.4 0.1"/>
+            <geom name="elbow_flex_geom" type="capsule"
+                  fromto="0 0 0 0 0 0.10"
+                  size="0.015" rgba="0.5 0.5 0.5 1" mass="0.07"/>
+
+            <!-- Wrist flex -->
+            <body name="wrist_flex_link" pos="0 0 0.10">
+              <joint name="wrist_flex" type="hinge" axis="0 1 0"
+                     range="-1.57 1.57"/>
+              <geom name="wrist_flex_geom" type="capsule"
+                    fromto="0 0 0 0 0 0.04"
+                    size="0.012" rgba="0.4 0.4 0.6 1" mass="0.04"/>
+
+              <!-- Wrist roll -->
+              <body name="wrist_roll_link" pos="0 0 0.04">
+                <joint name="wrist_roll" type="hinge" axis="0 0 1"
+                       range="-3.14 3.14"/>
+                <geom name="wrist_roll_geom" type="cylinder" size="0.012 0.008"
+                      rgba="0.4 0.4 0.6 1" mass="0.02"/>
+
+                <!-- Gripper mount -->
+                <body name="gripper_link" pos="0 0 0.02">
+                  <joint name="gripper" type="hinge" axis="0 1 0"
+                         range="-0.5 0.5" damping="1.0"/>
+                  <geom name="gripper_mount_geom" type="cylinder" size="0.01 0.005"
+                        rgba="0.5 0.5 0.5 1" mass="0.005"/>
+
+                  <!-- Left finger -->
+                  <body name="finger_left" pos="-0.01 0 -0.02">
+                    <geom name="finger_left_geom" type="box"
+                          size="0.005 0.008 0.025"
+                          rgba="0.6 0.6 0.6 1" mass="0.015"
+                          friction="1.0 0.05 0.01"/>
+                  </body>
+                  <!-- Right finger -->
+                  <body name="finger_right" pos="0.01 0 -0.02">
+                    <geom name="finger_right_geom" type="box"
+                          size="0.005 0.008 0.025"
+                          rgba="0.6 0.6 0.6 1" mass="0.015"
+                          friction="1.0 0.05 0.01"/>
+                  </body>
+                </body>
+
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+
+    <!-- Ground plane -->
+    <geom name="floor" type="plane" size="1 1 0.01"
+          rgba="0.9 0.9 0.9 1" conaffinity="1" condim="3"/>
+  </worldbody>
+
+  <actuator>
+    <position name="shoulder_pan"  joint="shoulder_pan"  kp="50"/>
+    <position name="shoulder_lift" joint="shoulder_lift" kp="50"/>
+    <position name="elbow_flex"    joint="elbow_flex"    kp="50"/>
+    <position name="wrist_flex"    joint="wrist_flex"    kp="40"/>
+    <position name="wrist_roll"    joint="wrist_roll"    kp="30"/>
+    <position name="gripper"       joint="gripper"       kp="80"
+              ctrlrange="-0.5 0.5"/>
+  </actuator>
+</mujoco>

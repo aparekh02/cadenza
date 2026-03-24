@@ -1,0 +1,294 @@
+<mujoco model="Kondo_hardT">
+
+    <compiler angle="radian"/>
+    <size njmax="500" nuserdata="100"/>
+    <option gravity="0 0 -9.81"
+            integrator = "RK4" timestep = "0.00001"
+            jacobian = "dense" cone = "elliptic" impratio = "10" 
+            solver = "Newton" tolerance="1e-15"
+            noslip_iterations="0" noslip_tolerance="1e-6" >
+        <flag energy="enable" fwdinv="enable" />
+    </option>
+    
+    <asset>
+        <texture name="body" type="cube" builtin="flat" mark="cross" width="127" height="1278"
+             rgb1="0.8 0.6 0.4" rgb2="0.8 0.6 0.4" markrgb="1 1 1" random="0.01"/>
+        <material name="body" texture="body" texuniform="true" rgba="0.8 0.6 .4 1"/>
+    </asset>
+
+
+    <worldbody>
+
+        <body name="Waist" pos="0 0 0.3"> 
+            <joint name="floating_base_joint" type="free"/>
+            <geom size="0.02525 0.038 0.018" pos="-0.00275 0 -0.022" type="box"/>
+
+            <site name="waist_site" type="sphere" size="0.0025" pos="0.01 0 -0.05" rgba="0 0 1 1" />
+
+            <body name="LeftHipBracket" pos="0.00875 0.02145 -0.03995">
+                <joint name="Left_Hip_Yaw" pos="0 0 0" axis="0 0 1" limited="true" range="-2.356 2.356" frictionloss="0.08" />
+                <geom size="0.02350 0.012 0.0155" pos="0 -0.0015 -0.0155" type="box"/>
+
+                <body name="LeftPelvis" pos="0 -0.00455 -0.02235">
+                    <joint name="Left_Hip_Roll" pos="0 0 0" axis="1 0 0" limited="true" range="-2.356 2.356" frictionloss="0.08" />
+                    <geom size="0.016 0.02125 0.01175" pos="0 0.01125 -0.00025" type="box"/>
+                    <geom size="0.01 0.02325 0.018" pos="0 0.01125 -0.03" type="box"/>
+
+                    <body name="LeftThigh" pos="-0.0008 0.0113 -0.0387">
+                        <joint name="Left_Hip_Pitch" pos="0 0 0" axis="0 1 0" limited="true" range="-2.356 2.356" frictionloss="0.08" />
+                        <geom size="0.01175 0.016 0.021" pos="0.00075 0 -0.011"  contype="0" conaffinity="0" type="box"/>
+                        <geom size="0.016 0.021 0.01125" pos="0.006 0 -0.054" quat="0.355262 0.611381 0.61138 0.355269" type="box"/>
+                        <geom size="0.016 0.01 0.0108" pos="0.003 0 -0.037" quat="0.164913 0.687606 0.687607 0.164921" type="box"/>
+
+                        <body name="LeftShin" pos="0.00015 0 -0.06375">
+                            <joint name="Left_Knee_Pitch" pos="0 0 0" axis="0 1 0" limited="true" range="-2.356 2.356" frictionloss="0.08" />
+                            <geom size="0.02325 0.018 0.01" pos="0.00425 0 -0.008" quat="0.608155 0.360758 0.360752 0.60816" type="box"/>
+                            <geom size="0.016 0.021 0.0115" pos="0.004 0 -0.054" quat="0.402402 0.581438 0.581436 0.40241" type="box"/>
+                            <geom size="0.0108 0.016 0.01" pos="0.0115 0 -0.028"  type="box"/>
+
+                            <body name="LeftAnkle" pos="0.0003 -0.0002 -0.06435">
+                                <joint name="Left_Ankle_Pitch" pos="0 0 0" axis="0 1 0" limited="true" range="-2.356 2.356" frictionloss="0.08" />
+                                <geom size="0.016 0.02125 0.01175" pos="0 0 -0.037"  contype="0" conaffinity="0" type="box"/>
+                                <geom size="0.01 0.02325 0.018" pos="0 0 -0.007" type="box"/>
+
+                                <body name="LeftFoot" pos="0 -0.01125 -0.037">
+                                    <joint name="Left_Ankle_Roll" pos="0 0 0" axis="1 0 0" limited="true" range="-2.356 2.356" frictionloss="0.08" />
+                                    <geom size="0.025 0.02 0.00825" pos="0 0.01125 -0.01825" type="box" contype="1" conaffinity="1"/>
+                                    <!-- <geom pos="0.04 -0.005 -0.02655" type="sphere" size="0.004" rgba="0 .9 0 1" density="0"/>
+                                    <geom pos="0.04 0.03 -0.02655" type="sphere" size="0.004" rgba="0 .9 0 1" density="0"/>
+                                    <geom pos="-0.03 -0.005 -0.02655" type="sphere" size="0.004" rgba="0 .9 0 1" density="0"/>
+                                    <geom pos="-0.03 0.03 -0.02655" type="sphere" size="0.004" rgba="0 .9 0 1" density="0"/> -->
+
+<!--                                    <geom type="sphere" density="0" pos="0.025 -0.00875 -0.0215" size="0.005" />-->
+<!--                                    <geom type="sphere" density="0" pos="0.025  0.03125 -0.0215" size="0.005" />-->
+<!--                                    <geom type="sphere" density="0" pos="-0.025 -0.00875 -0.0215" size="0.005" />-->
+<!--                                    <geom type="sphere" density="0" pos="-0.025  0.03125 -0.0215" size="0.005" />-->
+
+                                    <site name="left_foot_site" type="sphere" size="0.001" pos="0 0.01125 -0.0265" rgba="1 0 0 1" />
+                                </body>
+                            </body>
+                        </body>
+                    </body>
+                </body>
+            </body>
+
+            <body name="RightHipBracket" pos="0.00875 -0.02145 -0.03995">
+                <joint name="Right_Hip_Yaw" pos="0 0 0" axis="0 0 1" limited="true" range="-2.356 2.356" frictionloss="0.08" />
+                <geom size="0.02350 0.012 0.0155" pos="0 -0.0015 -0.0155" type="box"/>
+
+                <body name="RightPelvis" pos="0 0.00455 -0.02235">
+                    <joint name="Right_Hip_Roll" pos="0 0 0" axis="1 0 0" limited="true" range="-2.356 2.356" frictionloss="0.08" />
+                    <geom size="0.016 0.02125 0.01175" pos="0 -0.01125 -0.00025" type="box"/>
+                    <geom size="0.01 0.02325 0.018" pos="0 -0.01125 -0.03" type="box"/>
+
+                    <body name="RightThigh" pos="-0.0008 -0.0113 -0.0387">
+                        <joint name="Right_Hip_Pitch" pos="0 0 0" axis="0 1 0" limited="true" range="-2.356 2.356" frictionloss="0.08" />
+                        <geom size="0.01175 0.016 0.021" pos="0.00075 0 -0.011" type="box"/>
+                        <geom size="0.016 0.021 0.01125" pos="0.006 0 -0.054" quat="0.355262 0.611381 0.61138 0.355269" type="box"/>
+                        <geom size="0.016 0.01 0.0108" pos="0.003 0 -0.037" quat="0.164913 0.687606 0.687607 0.164921" type="box"/>
+
+                        <body name="RightShin" pos="0.00015 0 -0.06375">
+                            <joint name="Right_Knee_Pitch" pos="0 0 0" axis="0 1 0" limited="true" range="-2.356 2.356" frictionloss="0.08" />
+                            <geom size="0.02325 0.018 0.01" pos="0.00425 0 -0.008" quat="0.608155 0.360758 0.360752 0.60816" type="box"/>
+                            <geom size="0.016 0.021 0.0115" pos="0.004 0 -0.054" quat="0.402402 0.581438 0.581436 0.40241" type="box"/>
+                            <geom size="0.0108 0.016 0.01" pos="0.0115 0 -0.028" type="box"/>
+
+                            <body name="RightAnkle" pos="0.0003 0.0002 -0.06435">
+                                <joint name="Right_Ankle_Pitch" pos="0 0 0" axis="0 1 0" limited="true" range="-2.356 2.356" frictionloss="0.08" />
+                                <geom size="0.016 0.02125 0.01175" pos="0 0 -0.0375" type="box"/>
+                                <geom size="0.01 0.02325 0.018" pos="0 0 -0.007" type="box"/>
+
+                                <body name="RightFoot" pos="0 0.01125 -0.0375">
+                                    <joint name="Right_Ankle_Roll" pos="0 0 0" axis="1 0 0" limited="true" range="-2.356 2.356" frictionloss="0.08" />
+                                    <geom size="0.025 0.02 0.00825" pos="0 -0.01125 -0.01825" type="box" contype="1" conaffinity="1"/>
+                                    <!-- <geom pos="0.04 0.005 -0.02655" type="sphere" size="0.004" rgba="0 .9 0 1" density="0"/>
+                                    <geom pos="0.04 -0.03 -0.02655" type="sphere" size="0.004" rgba="0 .9 0 1" density="0"/>
+                                    <geom pos="-0.03 0.005 -0.02655" type="sphere" size="0.004" rgba="0 .9 0 1" density="0"/>
+                                    <geom pos="-0.03 -0.03 -0.02655" type="sphere" size="0.004" rgba="0 .9 0 1" density="0"/> -->
+
+<!--                                    <geom type="sphere" density="0" pos="0.025 -0.03125 -0.0215" size="0.005" />-->
+<!--                                    <geom type="sphere" density="0" pos="0.025  0.00875 -0.0215" size="0.005" />-->
+<!--                                    <geom type="sphere" density="0" pos="-0.025 -0.03125 -0.0215" size="0.005" />-->
+<!--                                    <geom type="sphere" density="0" pos="-0.025  0.00875 -0.0215" size="0.005" />-->
+
+
+                                    <site name="right_foot_site" type="sphere" size="0.001" pos="0 -0.01125 -0.0265" rgba="1 0 0 1" />
+                                </body>
+                            </body>
+                        </body>
+                    </body>
+                </body>
+            </body>
+
+            <body name="Torso" pos="0.02425 0 0.04715">
+                <joint name="Waist_Yaw" pos="0 0 0" axis="0 0 1" limited="true" range="-2.356 2.356" frictionloss="0.08" />
+                <geom size="0.04025 0.0445 0.03025" pos="-0.00475 0 -0.022" contype="0" conaffinity="0" type="box"/>
+                <!-- <geom size="0.02275 0.0525 0.044" pos="-0.06925 0 -0.012" type="box"/> -->
+
+                <body name="Head" pos="-0.00395 0 0.0134">
+                    <joint name="Neck_Yaw" pos="0 0 0" axis="0 0 1" limited="true" range="-2.356 2.356" frictionloss="0.08" />
+                    <geom size="0.02475 0.016 0.019" pos="0.00225 0 0.02475" contype="0" conaffinity="0" type="box"/>
+                </body>
+
+                <body name="LeftShoulderBracket" pos="-0.0041 0.04725 -0.0009">
+                    <joint name="Left_Shoulder_Pitch" pos="0 0 0" axis="0 1 0" limited="true" range="-2.356 2.356" frictionloss="0.08" />
+                    <geom size="0.02325 0.018 0.01" pos="0 0.0175 0" contype="0" conaffinity="0" type="box"/>
+
+                    <body name="LeftUpperArm" pos="0 0.02645 0">
+                        <joint name="Left_Shoulder_Roll" pos="0 0 0" axis="1 0 0" limited="true" range="-2.356 2.356" frictionloss="0.08" />
+                        <geom size="0.017775 0.0125 0.02125" pos="0.00025 0 -0.01125" contype="0" conaffinity="0" type="box"/>
+                        <geom size="0.02125 0.01125 0.015775" pos="-0.01175 -0.00025 -0.04825" contype="0" conaffinity="0" type="box"/>
+                        <geom size="0.02525 0.016775 0.00475" pos="-0.01125 -0.00025 -0.06875" contype="0" conaffinity="0" type="box"/>
+
+                        <body name="LeftElbowBracket" pos="0.00225 -0.00025 -0.07365">
+                            <joint name="Left_Arm_Yaw" pos="0 0 0" axis="0 0 1" limited="true" range="-2.356 2.356" frictionloss="0.08" />
+                            <geom size="0.0211 0.016 0.012" pos="-0.009 0 -0.012" contype="0" conaffinity="0" type="box"/>
+
+                            <body name="LeftForeArm" pos="0.0022 0 -0.0117">
+                                <joint name="Left_Elbow_Pitch" pos="0 0 0" axis="0 1 0" limited="true" range="-2.356 2.356" frictionloss="0.08" />
+                                <geom size="0.01 0.02325 0.009" pos="0 0 -0.018" contype="0" conaffinity="0" type="box"/>
+                                <geom size="0.0105 0.016 0.02" pos="0.001 0 -0.0465" contype="0" conaffinity="0" type="box"/>
+                                <geom size="0.0145 0.01175 0.012" pos="0.003 -0.00175 -0.0785" contype="0" conaffinity="0" type="box"/>
+                                <geom size="0.00325 0.00875 0.012" pos="0 0.001 -0.094" quat="0.653278 0.270601 0.653282 0.270602" contype="0" conaffinity="0" type="box"/>
+                            </body>
+                        </body>
+                    </body>
+                </body>
+
+                <body name="RightShoulderBracket" pos="-0.0041 -0.0475 -0.0009">
+                    <joint name="Right_Shoulder_Pitch" pos="0 0 0" axis="0 1 0" limited="true" range="-2.356 2.356" frictionloss="0.08" />
+                    <geom size="0.02325 0.018 0.01" pos="0 -0.0175 0" contype="0" conaffinity="0" type="box"/>
+
+                    <body name="RightUpperArm" pos="0 -0.02645 0">
+                        <joint name="Right_Shoulder_Roll" pos="0 0 0" axis="1 0 0" limited="true" range="-2.356 2.356" frictionloss="0.08" />
+                        <geom size="0.017775 0.0125 0.02125" pos="0.00025 0 -0.01125" contype="0" conaffinity="0" type="box"/>
+                        <geom size="0.02125 0.01125 0.015775" pos="-0.01175 0.00025 -0.04825" contype="0" conaffinity="0" type="box"/>
+                        <geom size="0.02525 0.016775 0.00475" pos="-0.01125 0.00025 -0.06875" contype="0" conaffinity="0" type="box"/>
+
+                        <body name="RightElbowBracket" pos="0.00225 0.00025 -0.07365">
+                            <joint name="Right_Arm_Yaw" pos="0 0 0" axis="0 0 1" limited="true" range="-2.356 2.356" frictionloss="0.08" />
+                            <geom size="0.0211 0.016 0.012" pos="-0.009 0 -0.012" contype="0" conaffinity="0" type="box"/>
+
+                            <body name="RightForeArm" pos="0.0022 0 -0.0117">
+                                <joint name="Right_Elbow_Pitch" pos="0 0 0" axis="0 1 0" limited="true" range="-2.356 2.356" frictionloss="0.08" />
+                                <geom size="0.01 0.02325 0.009" pos="0 0 -0.018" contype="0" conaffinity="0" type="box"/>
+                                <geom size="0.0105 0.016 0.02" pos="0.001 0 -0.0465" contype="0" conaffinity="0" type="box"/>
+                                <geom size="0.0145 0.01175 0.012" pos="0.003 0.00175 -0.0785" contype="0" conaffinity="0" type="box"/>
+                                <geom size="0.00325 0.00875 0.012" pos="0 -0.001 -0.094" quat="0.270593 0.653284 0.270596 0.653282" contype="0" conaffinity="0" type="box"/>
+                            </body>
+                        </body>
+                    </body>
+                </body>
+
+            </body>
+
+<!--            <body name="FW" pos="-0. 0 -0.10">-->
+<!--                    <joint name="FW_Roll" pos="0 0 0" axis="0 1 0" limited="true" range="-2.356 2.356" frictionloss="0.08" />-->
+<!--                    <geom size="0.02 0.02 0.02" pos="0.0 0 0.0" contype="0" conaffinity="0" type="box"/>-->
+<!--&lt;!&ndash;                    <joint name="FW_Pitch" pos="0 0 0" axis="1 0 0" limited="true" range="-2.356 2.356" frictionloss="0.08" />&ndash;&gt;-->
+<!--&lt;!&ndash;                    <geom size="0.02 0.02 0.02" pos="0.0 0 0.0" contype="0" conaffinity="0" type="box"/>&ndash;&gt;-->
+<!--&lt;!&ndash;                    <joint name="FW_Yaw" pos="0 0 0" axis="0 0 1" limited="true" range="-2.356 2.356" frictionloss="0.08" />&ndash;&gt;-->
+<!--&lt;!&ndash;                    <geom size="0.02 0.02 0.02" pos="0.0 0 0.0" contype="0" conaffinity="0" type="box"/>&ndash;&gt;-->
+<!--            </body>-->
+
+            <!--			<body name="torso FW" pos="-0.0 0.0 -0.0" euler="0 45 0">-->
+<!--				<joint name="Waist_Pitch" type="hinge" axis="0 1 0"/>-->
+<!--				<geom type="box" mass="0.5" pos="0.0 0.0 0" euler="0 0 0" size=".2 0.01 0.2" contype="0" conaffinity="0" rgba="0 .9 0 1" />-->
+<!--			</body>-->
+        </body>
+
+    </worldbody>
+
+    <actuator>
+        <motor name="LHY" joint="Left_Hip_Yaw"/>
+        <motor name="LHR" joint="Left_Hip_Roll"/>
+        <motor name="LHP" joint="Left_Hip_Pitch"/>
+        <motor name="LKP" joint="Left_Knee_Pitch"/>
+        <motor name="LAP" joint="Left_Ankle_Pitch"/>
+        <motor name="LAR" joint="Left_Ankle_Roll"/>
+
+        <motor name="RHY" joint="Right_Hip_Yaw"/>
+        <motor name="RHR" joint="Right_Hip_Roll"/>
+        <motor name="RHP" joint="Right_Hip_Pitch"/>
+        <motor name="RKP" joint="Right_Knee_Pitch"/>
+        <motor name="RAP" joint="Right_Ankle_Pitch"/>
+        <motor name="RAR" joint="Right_Ankle_Roll"/>
+
+        <motor name="WY" joint="Waist_Yaw"/>
+        <motor name="NY" joint="Neck_Yaw"/>        
+
+        <motor name="LSP" joint="Left_Shoulder_Pitch"/>
+        <motor name="LSR" joint="Left_Shoulder_Roll"/>
+        <motor name="LAY" joint="Left_Arm_Yaw"/>
+        <motor name="LEP" joint="Left_Elbow_Pitch"/>
+
+        <motor name="RSP" joint="Right_Shoulder_Pitch"/>
+        <motor name="RSR" joint="Right_Shoulder_Roll"/>
+        <motor name="RAY" joint="Right_Arm_Yaw"/>
+        <motor name="REP" joint="Right_Elbow_Pitch"/>
+
+<!--        <motor name="FWR" joint="FW_Roll"/>-->
+<!--        <motor name="FWP" joint="FW_Pitch"/>-->
+<!--        <motor name="FWY" joint="FW_Yaw"/>-->
+
+<!--        <motor name="WP" joint="Waist_Pitch"/>-->
+
+    </actuator>
+
+    <sensor>
+        <framepos name="waist_site_pos" objtype="site" objname="waist_site"/>
+        <framequat name="waist_site_quat" objtype="site" objname="waist_site"/>
+
+        
+        <accelerometer name="torso_acc" site="waist_site"/>
+        <gyro name="toso_gyro" site="waist_site"/>
+        
+        <accelerometer name="left_foot_acc" site="left_foot_site"/>
+        <gyro name="left_foot_gyro" site="left_foot_site"/>
+        
+        <accelerometer name="right_foot_acc" site="right_foot_site"/>
+        <gyro name="right_foot_gyro" site="right_foot_site"/>
+        
+        <subtreecom name="COM" body="Waist"/>
+        <subtreelinvel name="COMvel" body="Waist"/>
+        
+        <subtreeangmom name="Hg" body="Waist"/>
+    </sensor>
+
+
+    <keyframe>
+     <!--
+     The values below are split into rows for readibility:
+       floating frame position X Y Z
+       floating frame orientation quaternion 
+       right leg
+       left leg
+       neck yaw
+       waist yaw
+       right arm (pitch-roll-yaw-pitch)
+       left arm
+    -->
+<!--        <key name="hands_folded" qpos='-->
+<!--            0 0 0.28 -->
+<!--            1 0 0 0 -->
+<!--            0 0 -0.30628 0.51832 -0.18848 0 -->
+<!--            0  0 -0.30628 0.51832 -0.18848 0-->
+<!--            0 0 -->
+<!--            -0.63612 -0.04712 -0.37696 -1.67276 -->
+<!--            -0.7068 -0.04712 0.98952 -1.46072'/>-->
+
+<!--            <key name="sym_balance" qpos='-->
+<!--            -2.03544932e-02  1.11529100e-04  2.43536814e-01-->
+<!--            1.00000000e+00 -1.15059020e-14 -2.04392269e-15 3.27941776e-16-->
+<!--            7.80438455e-15 -6.93861247e-04 -9.83128800e-01,  1.67320765e+00 -6.90078852e-01 6.93861247e-04-->
+<!--            -6.07514730e-15 -6.93861696e-04 -9.89226211e-01,  1.68360347e+00 -6.94377263e-01 6.93861696e-04-->
+<!--            -1.16955927e-17 -9.09170362e-18-->
+<!--            -8.47778336e-16 6.39289832e-16 -1.15413037e-17 -2.39760511e-16-->
+<!--            -5.72202943e-16 9.62313284e-16 -6.84546054e-18 -2.670771115658062e-16'/>-->
+    </keyframe>
+
+    <visual>
+        <global offwidth="1280" offheight="720"/>
+    </visual>
+    
+</mujoco>

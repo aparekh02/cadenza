@@ -1,0 +1,34 @@
+<mujoco model="g1_29dof_rev_1_0 scene">
+  <include file="g1.xml"/>
+
+  <statistic center="1 -0.8 1.1" extent=".35"/>
+
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.1 0.1 0.1" specular="0.9 0.9 0.9"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+    <!-- <global azimuth="140" elevation="-20"/> -->
+    <!-- <map force="0.1" zfar="30"/> -->
+    <global offwidth="2560" offheight="1440" elevation="-20" azimuth="120"/>
+  </visual>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072"/>
+    <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3"
+      markrgb="0.8 0.8 0.8" width="300" height="300"/>
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2"/>
+  </asset>
+
+  <worldbody>
+    <geom name="floor" size="100 10 0.0005" pos="0 0 -0.0"  type="plane" material="groundplane" contype="1"  conaffinity="1"  solref="-10000 -100" solimp="0.0 0.95 0.002 0.5 2" priority="1"/>
+    <!-- <geom name="floor" size="100 10 0.0005" pos="0 0 -0.0"  type="plane" material="groundplane" contype="1"  conaffinity="1"  solref="-10000 -100" solimp="0.0 0.95 0.012 0.5 2" priority="1"/> -->
+
+        <body name="COP" pos="0.5 0 .5" quat="0 1 0 0" mocap="true">
+      <geom type="sphere"  mass="0" size=".005" contype="0" conaffinity="0" rgba=".6 .3 .3 .5"/>
+    </body>
+
+  <body name="COM_des" pos="0 0 .5" quat="0 1 0 0" mocap="true">
+      <geom type="sphere"  mass="0" size=".01" contype="0" conaffinity="0" rgba="1 0 0 1"/>
+    </body>
+
+  </worldbody>
+</mujoco>
