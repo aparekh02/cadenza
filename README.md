@@ -62,12 +62,12 @@
 ### Install
 
 ```bash
-git clone https://github.com/yourorg/cadenza.git
+git clone https://github.com/aparekh02/cadenza.git
 cd cadenza
 
 python -m venv .venv
 source .venv/bin/activate
-pip install numpy mujoco scipy faiss-cpu
+pip install -r requirements.txt
 ```
 
 ### First Simulation
