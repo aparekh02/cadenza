@@ -23,50 +23,29 @@
 
 <p align="center">
   <img alt="Version" src="https://img.shields.io/badge/version-1.1.2-blue?style=for-the-badge">
-  <img alt="C++20" src="https://img.shields.io/badge/C%2B%2B-20-00599C?style=for-the-badge&logo=cplusplus&logoColor=white">
-  <img alt="Python" src="https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white">
   <img alt="Platform" src="https://img.shields.io/badge/Platform-ARM64_Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black">
   <img alt="License" src="https://img.shields.io/badge/License-Apache_2.0-green?style=for-the-badge">
+  <img alt="Repo Size" src="https://img.shields.io/badge/Repo_Size-233_MB-orange?style=for-the-badge">
 </p>
 
 <p align="center">
   <img alt="Jetson Orin" src="https://img.shields.io/badge/Jetson_Orin-Supported-76B900?style=flat-square&logo=nvidia&logoColor=white">
   <img alt="Unitree Go1" src="https://img.shields.io/badge/Unitree_Go1-21_Actions-E34F26?style=flat-square">
   <img alt="Unitree G1" src="https://img.shields.io/badge/Unitree_G1-20_Actions-E34F26?style=flat-square">
-  <img alt="MuJoCo" src="https://img.shields.io/badge/MuJoCo-3.x-4A90D9?style=flat-square">
-  <img alt="Ollama" src="https://img.shields.io/badge/Ollama-Local_LLM-000000?style=flat-square">
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-Passing-brightgreen?style=flat-square">
 </p>
 
----
+## What is Cadenza?
+<div align="center">
 
-Most robot stacks send sensor data to the cloud, wait for a response, and hope the WiFi holds. Cadenza runs a full multimodal reasoning stack — vision encoder, scene understanding, action planner — directly on the robot's edge compute. A tiered architecture of small language models (SigLIP, Moondream, Phi-3.5) makes decisions in under 50ms on a Jetson Orin, with a deterministic behavior tree guaranteeing that safety reflexes **never wait for any model**.
+<video src="demo.mov" width="600" controls autoplay loop muted>
+  Your browser does not support the video tag.
+</video>
 
-The result: a robot that adapts to terrain it has never seen, follows natural language goals, and recovers from failures — all without a network connection.
-
-```python
-from cadenza.aicore import BehaviorEngine, ActionPlanner
-
-engine = BehaviorEngine("go1", planner=ActionPlanner())
-engine.set_goal("walk to the door and sit down")
-
-world = engine.observe(qpos, qvel, sensor_data=terrain)
-decision = engine.decide(world)
-# decision.action = "crawl_forward"
-# decision.reasoning = "Terrain: rough surface (roughness=0.60), crawling"
-```
-
----
-
-## Why Cadenza
+</div>
 
 | Problem | How Cadenza Solves It |
 |---|---|
-| Cloud inference adds 50–200ms latency to every decision | 4-tier SLM stack runs entirely on-device; safety decisions in <1ms |
-| Robot freezes when WiFi drops | Zero network dependency — all reasoning is local |
-| One model can't be both fast and smart | Tiered architecture: fast vision (20Hz) feeds slower planner (2Hz); behavior tree overrides both instantly |
-| No standard way to schedule RT control alongside AI inference | DSK gives SAFETY tasks 1ms deadlines on isolated cores while INFERENCE runs on shared cores |
-| Deploying new behaviors means reflashing the robot | Hot-load packages and kernels at runtime — zero reboot |
+| Specializing robot actions for different situations/environments is REALLY brute force with RL and requires intense resources/planning. Along so, cloud inference adds 50–200ms latency to every decision. And the developer experience is often annoying when reflashing new features or implementing new packages. | Cadenza has a static action library, which has preset walking, running, lifting, and other actions stored, using on-board 4-tier SLM stack running entirely on-edge to specialize the action library to the situation. Hot-load packages and kernels at runtime allow zero reboot for developers adding their OWN features to the robot. |
 
 ---
 
@@ -79,39 +58,6 @@ decision = engine.decide(world)
 | **Real-Time OS** | Deterministic scheduling (SCHED_FIFO + SCHED_DEADLINE)<br>Zero-copy pub/sub over shared memory<br>Isolated core pinning per task class<br>Hot-load/unload packages without reboot | 1ms SAFETY, 5ms CONTROL guaranteed<br>Lock-free SPSC queues, no mutexes<br>AI inference never starves motor control<br>Deploy new behaviors to a running robot |
 | **Developer Experience** | `cadenza` CLI for project lifecycle<br>MuJoCo simulation with closed-loop feedback<br>Kernel SDK for custom modules<br>Sim → SSH → DDS → Bridge deployment | One command to init, build, deploy<br>Test everything before touching hardware<br>Write perception/planning as a kernel<br>Laptop runs VLA, robot runs actions |
 
----
-
-## Architecture
-
-```
-                   ┌─────────────────────────────┐
-                   │    cadenza ai goal "..."     │  Developer / Operator
-                   └──────────────┬──────────────┘
-                                  │
-         ┌────────────────────────▼────────────────────────┐
-         │                    AICore                        │
-         │  T0 Vision (20Hz)  →  T1 Scene (10Hz)           │
-         │  T2 Planner (2Hz)  →  T3 Strategic (0.5Hz)      │
-         │  ─────────────────────────────────────────────── │
-         │  Behavior Tree: SAFETY > REACTIVE > TACTICAL     │
-         └────────────────────────┬────────────────────────┘
-                                  │ ActionDecision
-         ┌────────────────────────▼────────────────────────┐
-         │              Cadenza OS Kernel                   │
-         │  DSK (RT scheduling)  │  IKM (zero-copy pub/sub)│
-         │  Packages (hot-load)  │  Kernel SDK              │
-         └────────────────────────┬────────────────────────┘
-                                  │
-         ┌────────────────────────▼────────────────────────┐
-         │           Action Library (41 primitives)         │
-         │  Go1: 21 actions  │  G1: 20 actions              │
-         │  Phase trajectories + gait engine                │
-         └────────────────────────┬────────────────────────┘
-                                  │
-                          Hardware / MuJoCo
-```
-
----
 
 ## <a name="quick-start"></a> Quick Start
 
