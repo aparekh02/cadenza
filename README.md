@@ -2,7 +2,7 @@
 
 <img src="cadenza-logo.png" alt="Cadenza OS" width="350">
 
-**The FIRST AI-native, developer-first OS for robot intelligence.**
+**The FIRST AI-native, developer-focused OS for robot intelligence.**
 <br>Deterministic scheduling. Easy custom kernel/package integration. On-edge multimodal AI.
 
 </div>
