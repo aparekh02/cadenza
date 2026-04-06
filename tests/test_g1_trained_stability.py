@@ -4,7 +4,7 @@ Run:  mjpython test_g1_trained_stability.py
 """
 import sys, os
 
-import cadenza_local as cadenza
+import cadenza as cadenza
 
 g1 = cadenza.g1()
 

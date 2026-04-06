@@ -8,7 +8,7 @@ import sys, os
 os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
 
 sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parents[1]))
-import cadenza_local as cadenza
+import cadenza as cadenza
 
 commands = sys.argv[1] if len(sys.argv) > 1 else [
     "stand",

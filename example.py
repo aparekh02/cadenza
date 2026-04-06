@@ -3,7 +3,7 @@
 Usage:
     mjpython example.py
 """
-import cadenza_local as cadenza
+import cadenza as cadenza
 
 go1 = cadenza.go1()
 

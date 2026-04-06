@@ -1,7 +1,7 @@
 """Deploy Go1 — Real robot deployment examples.
    python examples/unitree_go1/deploy_go1.py
 """
-import cadenza_local as cadenza
+import cadenza as cadenza
 
 go1 = cadenza.go1()
 
