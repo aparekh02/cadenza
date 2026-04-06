@@ -22,6 +22,7 @@
 <p align="center">
   <img alt="Version" src="https://img.shields.io/badge/version-2.0.0-blue?style=for-the-badge">
   <img alt="License" src="https://img.shields.io/badge/License-Apache_2.0-green?style=for-the-badge">
+  <img alt="Package Size" src="https://img.shields.io/badge/size-873_KB-lightgrey?style=for-the-badge">
   <img alt="Unitree Go1" src="https://img.shields.io/badge/Go1-21_Actions-E34F26?style=flat-square">
   <img alt="Unitree G1" src="https://img.shields.io/badge/G1-20_Actions-E34F26?style=flat-square">
 </p>
