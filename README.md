@@ -1,47 +1,44 @@
-<div align="center">
-
-<img src="cadenza-logo.png" alt="Cadenza" width="350">
-
-**Developer-first action library for Unitree robots.**
-<br>Making physical AI easier for EVERYONE
-
-</div>
+<p align="center" style="margin-bottom: 8px;">
+  <img alt="Cadenza" src="cadenza-logo.png" height="70">
+</p>
+<hr style="margin: 0;">
+<h3 align="center" style="margin-top: 16px; margin-bottom: 16px;">
+Run and deploy complex robot actions with a unified Python SDK.
+</h3>
 
 <p align="center">
-  <a href="#quick-start">Quick Start</a>
-  <span>&nbsp;&nbsp;&bull;&nbsp;&nbsp;</span>
-  <a href="#action-library">Action Library</a>
-  <span>&nbsp;&nbsp;&bull;&nbsp;&nbsp;</span>
-  <a href="#cli">CLI</a>
-  <span>&nbsp;&nbsp;&bull;&nbsp;&nbsp;</span>
-  <a href="#deploy">Deploy</a>
-  <span>&nbsp;&nbsp;&bull;&nbsp;&nbsp;</span>
-  <a href="#examples">Examples</a>
+  <a href="#-features">Features</a> •
+  <a href="#-quickstart">Quickstart</a> •
+  <a href="#-free-projects">Projects</a> •
+  <a href="#-cli">CLI</a> •
+  <a href="#-deploy">Deploy</a>
 </p>
 
-<p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-2.0.0-blue?style=for-the-badge">
-  <img alt="License" src="https://img.shields.io/badge/License-Apache_2.0-green?style=for-the-badge">
-  <img alt="Package Size" src="https://img.shields.io/badge/size-873_KB-lightgrey?style=for-the-badge">
-  <img alt="Unitree Go1" src="https://img.shields.io/badge/Go1-21_Actions-E34F26?style=flat-square">
-  <img alt="Unitree G1" src="https://img.shields.io/badge/G1-20_Actions-E34F26?style=flat-square">
-</p>
+<a href="#-quickstart">
+<img alt="Cadenza Demo" src="demo.gif" style="max-width: 100%; margin-bottom: 0;"></a>
 
-## What is Cadenza?
+Cadenza (1.2.1) lets you simply write complex motion-targeted code and deploy on MuJoCo or hardware for Unitree [Go1 (quadruped)](#-go1-quadruped) and [G1 (humanoid)](#-g1-humanoid) robots.
 
-<div align="center">
-<img src="demo.gif" alt="Cadenza Demo" width="600">
-</div>
+## ⭐ Features
 
-Cadenza is a **developer-first action library** for Unitree quadruped (Go1) and humanoid (G1) robots. It provides 41 motor-level action primitives sourced from URDF specs — no RL training, no sim-to-real gap at the primitive level.
+### Action Library
+* **41 motor-level primitives** across Go1 (21 actions) and G1 (20 actions) — joint targets, PD gains, and torque limits sourced directly from URDF
+* **Phase-based actions**: stand, sit, lie down, stand up, jump, rear up, shake hand
+* **Gait-based actions**: walk, trot, crawl, pace, bound, climb, turn, sidestep
+* **Composable**: run actions sequentially or concurrently in a single call
+* **Parameterized**: every action accepts `speed`, `extension`, `distance_m`, and `repeat`
 
-Write your robot program in Python, test it in MuJoCo simulation, then deploy to hardware with a single command.
+### Simulation
+* **MuJoCo simulator** built in — test any action sequence before touching hardware
+* **Natural language commands**: `cadenza sim go1 "walk forward then jump"` just works
+* **VLA Guardian**: SmolVLM-256M watches the forward camera and injects avoidance actions when obstacles appear
 
----
+### Deploy
+* **SSH deploy**: upload and run a script on the robot's onboard computer
+* **DDS direct**: send motor commands from your laptop over DDS (same network)
+* **Bridge mode**: run heavy compute on your laptop, lightweight actions on the robot
 
-## <a name="quick-start"></a> Quick Start
-
-### Install
+## ⚡ Quickstart
 
 ```bash
 git clone https://github.com/aparekh02/cadenza.git
@@ -52,13 +49,11 @@ source .venv/bin/activate
 pip install -e .
 ```
 
-### First Simulation
+Run the demo — the Go1 stands, walks 2m, arcs through a turn, jumps, and sits:
 
 ```bash
 mjpython example.py
 ```
-
-Opens a MuJoCo viewer. The Go1 stands, walks 2m, arcs through a turn, jumps, and sits.
 
 ### Python API
 
@@ -75,71 +70,7 @@ go1.run([
 ])
 ```
 
----
-
-## <a name="cli"></a> CLI
-
-```bash
-cadenza list go1                                     # list all Go1 actions
-cadenza list g1                                      # list all G1 actions
-cadenza sim go1 "walk forward then jump"             # simulate in MuJoCo
-cadenza sim g1 "stand then walk forward"             # simulate G1
-cadenza deploy go1 --ip 192.168.123.15               # deploy via SSH
-cadenza deploy go1 --ip ... --mode direct            # deploy via DDS
-cadenza deploy go1 --ip ... --mode bridge            # bridge mode
-```
-
----
-
-## <a name="action-library"></a> Action Library
-
-41 motor-level action primitives for two robot platforms. Every action has exact joint targets, PD gains, and torque limits from URDF. No learned controller.
-
-### Go1 Quadruped — 21 Actions
-
-```python
-import cadenza
-
-go1 = cadenza.go1()
-go1.run([
-    go1.stand(),
-    go1.walk_forward(speed=1.5, distance_m=3.0),
-    [go1.turn_left(), go1.walk_forward()],   # concurrent: walking arc
-    go1.jump(speed=2.0, extension=1.2),
-    go1.sit(),
-])
-```
-
-<details>
-<summary><strong>Full Go1 action table</strong></summary>
-
-| Action | Type | Description |
-|--------|------|-------------|
-| `stand()` | phase | Stand at default height |
-| `stand_up()` | phase | Stand up from lying down |
-| `sit()` | phase | Sit down |
-| `lie_down()` | phase | Lie flat |
-| `jump()` | phase | Jump in place |
-| `walk_forward()` | gait | Walk forward |
-| `walk_backward()` | gait | Walk backward |
-| `trot_forward()` | gait | Trot (diagonal gait) |
-| `crawl_forward()` | gait | Crawl (low, stable) |
-| `pace_forward()` | gait | Pace (lateral gait) |
-| `bound_forward()` | gait | Bound (synchronous front-back) |
-| `turn_left()` | gait | Turn left in place |
-| `turn_right()` | gait | Turn right in place |
-| `climb_step()` | gait | Climb a step |
-| `side_step_left()` | gait | Lateral step left |
-| `side_step_right()` | gait | Lateral step right |
-| `rear_up()` | phase | Rear up on hind legs |
-| `shake_hand()` | phase | Extend front paw |
-| `rear_kick()` | phase | Kick with rear legs |
-
-All actions accept `speed` and `extension` multipliers. Gait actions also accept `distance_m` and `repeat`.
-
-</details>
-
-### G1 Humanoid — 20 Actions
+### G1 Humanoid
 
 ```python
 g1 = cadenza.g1()
@@ -152,26 +83,30 @@ g1.run([
 ])
 ```
 
-### Direct Library Access
+## 🤖 Free Projects
 
-```python
-from cadenza.actions import get_library, list_actions
+Community projects built with Cadenza. Add yours via a pull request.
 
-# List all actions
-list_actions("go1")
+| Project | Robot | Description | Link |
+|---------|-------|-------------|------|
+| **Go1 Obstacle Course** | Go1 | VLA-guided navigation through a MuJoCo obstacle course | _coming soon_ |
+| **G1 Gesture Control** | G1 | Map hand gestures to G1 arm actions via webcam | _coming soon_ |
+| **Multi-robot Sync** | Go1 + G1 | Synchronized action sequences across two robots | _coming soon_ |
 
-# Get an action spec
-lib = get_library("go1")
-spec = lib.get("walk_forward")
-print(spec.gait)        # GaitAction with velocity commands
-print(spec.phases)      # list of ActionPhase (for phase-based actions)
+## 🖥️ CLI
+
+```bash
+cadenza list go1                                      # list all Go1 actions
+cadenza list g1                                       # list all G1 actions
+cadenza sim go1 "walk forward then jump"              # simulate in MuJoCo
+cadenza sim g1 "stand then walk forward"              # simulate G1
+cadenza sim go1 "walk forward" --vla --obstacles      # VLA obstacle avoidance
+cadenza deploy go1 --ip 192.168.123.15 -c "..."       # deploy via SSH
+cadenza deploy go1 --ip ... --mode direct             # deploy via DDS
+cadenza deploy go1 --ip ... --mode bridge             # bridge mode
 ```
 
----
-
-## <a name="deploy"></a> Deploying to Hardware
-
-Three deployment modes for real robots:
+## 🚀 Deploy
 
 ### SSH Deploy
 Upload and run a script on the robot's onboard computer.
@@ -188,7 +123,7 @@ cadenza deploy go1 --ip 192.168.123.15 --mode direct -c "stand then walk forward
 ```
 
 ### Bridge Mode
-Run heavy computation on your laptop, lightweight actions on the robot.
+Run heavy computation on your laptop, lightweight actions on the robot — ideal for model inference loops.
 
 ```python
 go1 = cadenza.go1()
@@ -202,46 +137,104 @@ while True:
 bridge.estop()
 ```
 
----
+## 📦 Action Library Reference
 
-## <a name="examples"></a> Examples
+<details>
+<summary><strong>Go1 — 21 actions</strong></summary>
 
-| Example | Robot | Description |
-|---------|-------|-------------|
-| `example.py` | Go1 | Stand, walk, arc turn, jump, sit |
-| `examples/unitree_go1/deploy_go1.py` | Go1 | Sim / SSH / DDS / bridge |
-| `examples/unitree_g1/deploy_g1.py` | G1 | Humanoid sim and deployment |
-| `tests/test_go1_actions.py` | Go1 | Action validation |
+| Action | Type | Description |
+|--------|------|-------------|
+| `stand()` | phase | Stand at default height |
+| `stand_up()` | phase | Stand up from lying down |
+| `sit()` | phase | Sit down |
+| `lie_down()` | phase | Lie flat |
+| `jump()` | phase | Jump in place |
+| `rear_up()` | phase | Rear up on hind legs |
+| `shake_hand()` | phase | Extend front paw |
+| `rear_kick()` | phase | Kick with rear legs |
+| `walk_forward()` | gait | Walk forward |
+| `walk_backward()` | gait | Walk backward |
+| `trot_forward()` | gait | Trot (diagonal gait) |
+| `crawl_forward()` | gait | Crawl (low, stable) |
+| `pace_forward()` | gait | Pace (lateral gait) |
+| `bound_forward()` | gait | Bound (synchronous front-back) |
+| `turn_left()` | gait | Turn left in place |
+| `turn_right()` | gait | Turn right in place |
+| `climb_step()` | gait | Climb a step |
+| `side_step_left()` | gait | Lateral step left |
+| `side_step_right()` | gait | Lateral step right |
+
+All actions accept `speed` and `extension` multipliers. Gait actions also accept `distance_m` and `repeat`.
+
+</details>
+
+<details>
+<summary><strong>G1 — 20 actions</strong></summary>
+
+Access via `cadenza.g1()`. Full action list: `cadenza list g1`.
+
+</details>
+
+```python
+from cadenza.actions import get_library, list_actions
+
+list_actions("go1")               # print all actions
+
+lib = get_library("go1")
+spec = lib.get("walk_forward")
+print(spec.gait)                  # GaitAction with velocity commands
+```
+
+## 🐾 Go1 Quadruped
+
+The Go1 is a quadruped robot with 12 joints across four legs. Cadenza provides 21 actions for it.
 
 ```bash
-mjpython example.py
-python examples/unitree_go1/deploy_go1.py sim
-python examples/unitree_g1/deploy_g1.py sim
+mjpython example.py                                  # run the Go1 demo
+cadenza sim go1 "walk forward then jump"             # simulate via CLI
+cadenza list go1                                     # list all Go1 actions
+cadenza deploy go1 --ip 192.168.123.15 -c "..."      # deploy to hardware
 ```
 
----
+```python
+import cadenza
 
-## Project Structure
-
-```
-cadenza/
-  actions/            41 motor-level primitives (Go1 + G1)
-  parser/             Natural language command parsing
-  locomotion/         Kinematics, gait engine, robot specs
-  deploy/             SSH, DDS, bridge deployment drivers
-  robots/             Robot-specific primitive tables
-  models/             MuJoCo XML models + meshes
-  sim.py              MuJoCo simulator
-  go1.py              Go1 developer controller
-  g1.py               G1 developer controller
-  __main__.py         CLI entry point
-
-examples/             Deployment examples
-tests/                Integration tests
+go1 = cadenza.go1()
+go1.run([
+    go1.stand(),
+    go1.walk_forward(speed=1.5, distance_m=2.0),
+    go1.jump(),
+    go1.sit(),
+])
 ```
 
----
+## 🤖 G1 Humanoid
 
-## License
+The G1 is a full-size humanoid robot. Cadenza provides 20 actions for bipedal locomotion and arm control.
 
-Apache 2.0 — see [LICENSE](LICENSE) for details.
+```bash
+cadenza sim g1 "stand then walk forward"             # simulate via CLI
+cadenza list g1                                      # list all G1 actions
+python examples/unitree_g1/deploy_g1.py sim          # run the G1 example
+```
+
+```python
+import cadenza
+
+g1 = cadenza.g1()
+g1.run([
+    g1.stand(),
+    g1.walk_forward(speed=0.3, distance_m=1.0),
+    g1.crouch(),
+    g1.lift_left_hand(),
+    g1.stand(),
+])
+```
+
+## 💚 Community
+
+| | Links |
+|---|---|
+| **GitHub** | [aparekh02/cadenza](https://github.com/aparekh02/cadenza) |
+| **Issues** | [Report a bug or request a feature](https://github.com/aparekh02/cadenza/issues) |
+| **License** | [Apache 2.0](LICENSE) |
