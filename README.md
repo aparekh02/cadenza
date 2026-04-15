@@ -14,8 +14,11 @@ Run and deploy complex robot actions with a unified Python SDK.
   <a href="#-deploy">Deploy</a>
 </p>
 
-<a href="#-quickstart">
-<img alt="Cadenza Demo" src="demo.gif" style="max-width: 100%; margin-bottom: 0;"></a>
+<p align="center">
+  <a href="#-quickstart">
+    <img alt="Cadenza Demo" src="demo.gif" style="max-width: 100%; margin-bottom: 0;">
+  </a>
+</p>
 
 Cadenza (1.2.1) lets you simply write complex motion-targeted code and deploy on MuJoCo or hardware for Unitree [Go1 (quadruped)](#-go1-quadruped) and [G1 (humanoid)](#-g1-humanoid) robots.
 
