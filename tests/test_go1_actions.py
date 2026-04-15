@@ -4,21 +4,17 @@ Usage:
     mjpython tests/test_go1_actions.py
     mjpython tests/test_go1_actions.py "walk forward then turn left then jump"
 """
-import sys, os
-os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
-
-sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parents[1]))
 import cadenza as cadenza
 
-commands = sys.argv[1] if len(sys.argv) > 1 else [
-    "stand",
-    "walk forward 1 meter",
-    "turn left",
-    "walk forward 1 meter",
-    "turn right",
-    "jump",
-    "sit down",
-    "stand up",
-]
+go1 = cadenza.go1()
 
-cadenza.run(commands)
+go1.run([
+    go1.stand(),
+    go1.walk_forward(distance_m=1.0),
+    go1.turn_left(),
+    go1.walk_forward(distance_m=1.0),
+    go1.turn_right(),
+    go1.jump(),
+    go1.sit(),
+    go1.stand_up(),
+])
