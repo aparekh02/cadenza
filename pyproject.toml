@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cadenza-lab"
-version = "1.2.3"
+version = "1.2.4"
 authors = [
   { name = "Aksh Parekh", email = "akshparekh123@gmail.com" },
 ]
@@ -20,8 +20,6 @@ dependencies = [
     "numpy",
     "mujoco",
     "click>=8.0",
-    "twine>=6.2.0",
-    "build>=1.4.3",
 ]
 
 [project.optional-dependencies]
