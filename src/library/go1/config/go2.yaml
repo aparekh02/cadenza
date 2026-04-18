@@ -1,0 +1,47 @@
+# Cadenza locomotion config — Unitree Go2
+# Go2 has wider joint range, higher torque (45Nm), and built-in LiDAR.
+# All specs auto-loaded from cadenza.locomotion.robot_spec.GO2
+
+robot_model: go2
+
+topics:
+  cmd_vel:       /cmd_vel
+  joint_states:  /joint_states
+  imu:           /imu/data
+  foot_contact:  /foot_contact
+  loco_command:  /cadenza/loco_command
+  memory_update: /cadenza/memory_update
+
+control:
+  rate_hz:         50.0
+  stm_window:      50
+  skill_alpha:     0.40
+  terrain_alpha:   0.30
+  safety_priority: true
+
+memory:
+  snapshot: ""
+  log_dir:  logs/go2
+
+groq:
+  enabled:          true
+  nav_interval_s:   4.0    # Go2 responds faster — query Groq more often
+  bench_interval_s: 12.0
+
+robot:
+  n_joints:     12
+  joint_names:
+    - FL_hip
+    - FL_thigh
+    - FL_calf
+    - FR_hip
+    - FR_thigh
+    - FR_calf
+    - RL_hip
+    - RL_thigh
+    - RL_calf
+    - RR_hip
+    - RR_thigh
+    - RR_calf
+  max_speed_xy:  1.8       # m/s (Go2 flat benchmark)
+  max_yaw_rate:  1.2       # rad/s
