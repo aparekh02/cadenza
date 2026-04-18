@@ -20,7 +20,9 @@ Run and deploy complex robot actions with a simple Python SDK.
   </a>
 </p>
 
-Cadenza (1.2.1) lets you simply write complex motion-targeted code and deploy on MuJoCo or hardware for Unitree [Go1 (quadruped)](#-go1-quadruped) and [G1 (humanoid)](#-g1-humanoid) robots.
+Cadenza lets you simply write complex motion-targeted code and deploy on MuJoCo or hardware for Unitree [Go1 (quadruped)](#-go1-quadruped) and [G1 (humanoid)](#-g1-humanoid) robots.
+
+Our pip package: [Cadenza Lab](https://pypi.org/project/cadenza-lab/)
 
 ## ⭐ Features
 
