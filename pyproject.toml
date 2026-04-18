@@ -1,25 +1,55 @@
 [build-system]
-requires = ["setuptools>=68.0", "wheel"]
+requires = ["setuptools >= 77.0.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "cadenza"
-version = "1.2.2"
+name = "cadenza-lab"
+version = "1.2.3"
+authors = [
+  { name = "Aksh Parekh", email = "akshparekh123@gmail.com" },
+]
 description = "Cadenza - Simple Python SDK to deploy complex robot actions"
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
 dependencies = [
     "numpy",
     "mujoco",
     "click>=8.0",
+    "twine>=6.2.0",
+    "build>=1.4.3",
 ]
 
 [project.optional-dependencies]
 deploy = ["paramiko"]
 
+[project.urls]
+Homepage = "https://github.com/aparekh02/cadenza"
+Issues = "https://github.com/aparekh02/cadenza/issues"
+
 [project.scripts]
 cadenza = "cadenza.__main__:cli"
 
-[tool.setuptools.packages.find]
-include = ["cadenza*"]
+[tool.setuptools.package-dir]
+cadenza = "src"
+
+[tool.setuptools]
+packages = [
+    "cadenza",
+    "cadenza.actions",
+    "cadenza.actions.trained",
+    "cadenza.deploy",
+    "cadenza.locomotion",
+    "cadenza.parser",
+    "cadenza.robots",
+    "cadenza.robots.g1",
+    "cadenza.robots.go1",
+    "cadenza.vla",
+]
+
+[tool.setuptools.package-data]
+cadenza = ["models/**/*"]

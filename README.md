@@ -1,5 +1,5 @@
 <h1 align="center" style="margin-bottom: 8px;">
-  <img alt="Cadenza" src="cadenza-logo.png" height="70">
+  <img alt="Cadenza" src="https://raw.githubusercontent.com/aparekh02/cadenza/main/cadenza-logo.png" height="70">
 </h1>
 
 <h3 align="center" style="margin-top: 16px; margin-bottom: 16px;">
@@ -16,7 +16,7 @@ Run and deploy complex robot actions with a simple Python SDK.
 
 <p align="center">
   <a href="#-quickstart">
-    <img alt="Cadenza Demo" src="demo.gif" style="max-width: 100%; margin-bottom: 0;">
+    <img alt="Cadenza Demo" src="https://raw.githubusercontent.com/aparekh02/cadenza/main/demo.gif" style="max-width: 100%; margin-bottom: 0;">
   </a>
 </p>
 
