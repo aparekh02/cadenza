@@ -3,7 +3,7 @@
 </h1>
 
 <h3 align="center" style="margin-top: 16px; margin-bottom: 16px;">
-Run and deploy complex robot actions with a unified Python SDK.
+Run and deploy complex robot actions with a simple Python SDK.
 </h3>
 
 <p align="center">
