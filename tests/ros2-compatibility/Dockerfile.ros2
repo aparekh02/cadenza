@@ -1,0 +1,27 @@
+FROM ros:humble-ros-base
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    ros-humble-std-msgs \
+    ros-humble-geometry-msgs \
+    ros-humble-sensor-msgs \
+    ros-humble-std-srvs \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /cadenza
+COPY . .
+
+# Install Python deps. Cadenza models live under src/, so add it to PYTHONPATH
+# rather than relying on editable-install support (varies by setuptools version).
+RUN pip3 install --no-cache-dir numpy mujoco click
+
+# Disable GL entirely — headless physics only, no rendering needed.
+ENV MUJOCO_GL=disabled
+ENV KMP_DUPLICATE_LIB_OK=TRUE
+ENV PYTHONPATH=/cadenza/src:$PYTHONPATH
+
+# Source ROS 2 and run tests.
+CMD ["/bin/bash", "-c", \
+     "source /opt/ros/humble/setup.bash && python3 tests/test_ros2_integration.py"]
