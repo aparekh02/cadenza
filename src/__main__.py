@@ -51,7 +51,7 @@ def sim(robot: str, command: str, disturbance: float | None, vla: bool, obstacle
         xml_path = None
         if obstacles:
             from pathlib import Path
-            xml_path = str(Path(__file__).parent / "models" / "go1" / "obstacle_scene.xml")
+            xml_path = str(Path(__file__).resolve().parent.parent / "models" / "go1" / "obstacle_scene.xml")
 
         if vla:
             from cadenza.go1 import Go1

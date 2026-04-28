@@ -27,8 +27,9 @@ _CRITICAL_OMEGA = 8.0       # rad/s — violent swinging
 # Humanoid robots — different kinematic structure
 _HUMANOID_ROBOTS = {"g1"}
 
-# Bundled models — keyed by robot name
-_MODELS_DIR = Path(__file__).resolve().parent / "models"
+# Bundled models — keyed by robot name. ``models/`` lives at the project
+# root (one level above the cadenza package source dir).
+_MODELS_DIR = Path(__file__).resolve().parent.parent / "models"
 _BUNDLED = {
     "go1": _MODELS_DIR / "go1" / "scene.xml",
     "g1":  _MODELS_DIR / "g1"  / "scene.xml",

@@ -10,7 +10,7 @@ import math
 import numpy as np
 from pathlib import Path
 
-_DATA_DIR = Path(__file__).resolve().parent / "models" / "g1"
+_DATA_DIR = Path(__file__).resolve().parent.parent / "models" / "g1"
 _DT = 0.002
 _RENDER_HZ = 60
 

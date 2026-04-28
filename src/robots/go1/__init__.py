@@ -10,8 +10,12 @@ from pathlib import Path
 
 # ── Paths ────────────────────────────────────────────────────────────────────
 _PKG_DIR = Path(__file__).resolve().parent
-_CADENZA_DIR = _PKG_DIR.parent.parent          # cadenza/
-_MODELS_DIR = _CADENZA_DIR / "models" / "go1"
+# models/ now lives at the project root (sibling of src/), so we climb out
+# of the cadenza package one extra level to find it. library/ still lives
+# inside the cadenza package.
+_PROJECT_ROOT = _PKG_DIR.parent.parent.parent
+_CADENZA_DIR = _PKG_DIR.parent.parent          # src/  (the cadenza package)
+_MODELS_DIR = _PROJECT_ROOT / "models" / "go1"
 _LIBRARY_DIR = _CADENZA_DIR / "library" / "go1"
 
 # MuJoCo model
