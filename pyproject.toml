@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cadenza-lab"
-version = "1.3.1"
+version = "1.3.2"
 authors = [
   { name = "Aksh Parekh", email = "acparekh@stanford.edu" },
 ]
@@ -48,6 +48,7 @@ packages = [
     "cadenza.robots.go1",
     "cadenza.stack",
     "cadenza.stack.adapters",
+    "cadenza.stack.modalities",
     "cadenza.stack.vision",
     "cadenza.vla",
     "cadenza_lab",
@@ -55,3 +56,9 @@ packages = [
 
 [tool.setuptools.package-data]
 cadenza = ["models/**/*"]
+
+[dependency-groups]
+dev = [
+    "requests>=2.33.1",
+    "twine>=6.2.0",
+]

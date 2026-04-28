@@ -1,33 +1,27 @@
-"""Drive a Cadenza robot with HuggingFace's SmolVLA on the stairs course.
+"""SmolVLA + Depth-Anything-V2-Small on the stairs course.
 
-Same content as examples/smolvla-test/run_smolvla.py.
-
-    pip install "lerobot[smolvla]"
+    pip install "lerobot[smolvla]" "transformers>=4.43" pillow
     mjpython test.py
 """
 
-import pathlib
+import sys, pathlib
+sys.path.insert(0, str(pathlib.Path(__file__).parent / "examples" / "smolvla-test"))
 
 import cadenza_lab as cadenza
 import cadenza_lab.stack
+from depth_anything_v2_small import DepthAnythingV2Small
 from lerobot.policies.smolvla.modeling_smolvla import SmolVLAPolicy
 
-SCENE = str(
-    pathlib.Path(__file__).parent
-    / "examples" / "smolvla-test" / "stairs_scene.xml"
+cadenza.stack.register_world_model(
+    "smolvla", model=SmolVLAPolicy.from_pretrained("lerobot/smolvla_base"),
 )
 
-policy = SmolVLAPolicy.from_pretrained("lerobot/smolvla_base")
-
-cadenza.stack.register_world_model("smolvla", model=policy)
 cadenza.stack.run(
     robot="go1",
-    goal=(
-        "walk_forward then walk_forward then walk_forward "
-        "then climb_step then climb_step then climb_step then climb_step "
-        "then walk_forward then sit"
-    ),
-    target=(-5.5, 0.0),     # green-beacon goal pad on the top deck
-    xml_path=SCENE,
-    max_iterations=40,
+    goal=("walk_forward then walk_forward then walk_forward "
+          "then climb_step then climb_step then climb_step then climb_step "
+          "then walk_forward then sit"),
+    target=(-5.5, 0.0),
+    xml_path="examples/smolvla-test/stairs_scene.xml",
+    modalities=[DepthAnythingV2Small()],
 )

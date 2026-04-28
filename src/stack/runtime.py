@@ -64,6 +64,7 @@ class Stack:
         goal: str = "",
         target: tuple[float, float] | None = None,
         world_model: str | type[WorldModelAdapter] | WorldModelHandle | None = None,
+        modalities: list | None = None,
         root: str | Path = ".",
         max_iterations: int = 30,
         headless: bool = False,
@@ -82,6 +83,7 @@ class Stack:
         self.render_camera = render_camera
         self.xml_path = xml_path
         self.verbose = verbose
+        self.modalities = self._resolve_modalities(modalities or [])
 
         # 1. Detect (or accept) the world model.
         self.handle = self._resolve_handle(world_model, root)
@@ -114,6 +116,24 @@ class Stack:
         cls = world_model if isinstance(world_model, type) else get_adapter(world_model)
         return WorldModelHandle(adapter_cls=cls, checkpoint=None, source="explicit")
 
+    @staticmethod
+    def _resolve_modalities(items):
+        """Accept Modality instances, classes, or registered name strings."""
+        from cadenza.stack.modalities.base import Modality, get_modality
+        out: list[Modality] = []
+        for item in items:
+            if isinstance(item, Modality):
+                out.append(item)
+            elif isinstance(item, str):
+                out.append(get_modality(item)())
+            elif isinstance(item, type) and issubclass(item, Modality):
+                out.append(item())
+            else:
+                raise TypeError(
+                    f"modalities entries must be Modality | type | str — got {type(item)!r}"
+                )
+        return out
+
     def _log(self, msg: str) -> None:
         if self.verbose:
             print(f"  [stack] {msg}")
@@ -145,10 +165,30 @@ class Stack:
         )
         observation = self._gym.reset()
 
+        # Plug-in modalities: setup once, run every tick, teardown at the end.
+        for m in self.modalities:
+            m.setup()
+        if self.modalities:
+            self._log(
+                "modalities: " + ", ".join(m.name for m in self.modalities)
+            )
+
         def _obs_dict():
             d = observation.to_dict()
             if self.target is not None:
                 d["target_xy"] = self.target
+            summaries: list[str] = []
+            for m in self.modalities:
+                try:
+                    res = m.compute(observation)
+                except Exception as e:
+                    self._log(f"modality {m.name} failed: {e}")
+                    continue
+                d.update(res.keys)
+                if res.summary:
+                    summaries.append(res.summary)
+            if summaries and self.verbose:
+                print(f"  [stack]   {' | '.join(summaries)}")
             return d
 
         try:
@@ -192,6 +232,11 @@ class Stack:
         finally:
             result.final_observation = self._gym._observe() if self._gym.is_open else None
             self._gym.close()
+            for m in self.modalities:
+                try:
+                    m.teardown()
+                except Exception:
+                    pass
 
         self._log(
             f"finished: {result.total_actions} actions executed, "
@@ -208,6 +253,7 @@ def run(
     *,
     target: tuple[float, float] | None = None,
     world_model: str | type[WorldModelAdapter] | WorldModelHandle | None = None,
+    modalities: list | None = None,
     root: str | Path = ".",
     max_iterations: int = 30,
     headless: bool = False,
@@ -231,6 +277,7 @@ def run(
         goal=goal,
         target=target,
         world_model=world_model,
+        modalities=modalities,
         root=root,
         max_iterations=max_iterations,
         headless=headless,

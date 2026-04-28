@@ -45,6 +45,13 @@ from cadenza.stack.builder import ActionSequenceBuilder, BuiltSequence
 from cadenza.stack.gym_adapter import GymAdapter, Observation
 from cadenza.stack.runtime import Stack, run
 from cadenza.stack.trajectory import TrajectoryMonitor
+from cadenza.stack.modalities import (
+    Modality,
+    ModalityResult,
+    register_modality,
+    get_modality,
+    list_modalities,
+)
 
 __all__ = [
     "run",
@@ -60,4 +67,9 @@ __all__ = [
     "GymAdapter",
     "Observation",
     "TrajectoryMonitor",
+    "Modality",
+    "ModalityResult",
+    "register_modality",
+    "get_modality",
+    "list_modalities",
 ]
