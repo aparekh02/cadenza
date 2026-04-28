@@ -286,9 +286,10 @@ class Sim:
     # ── reactive loop ──
 
     def get_state(self) -> dict:
-        """Current robot state — position, orientation, contacts, terrain ahead."""
+        """Current robot state — position, orientation, contacts, terrain + obstacles ahead."""
         rpy = _rpy(self.data.qpos[3:7])
         terrain = self._probe_terrain_ahead()
+        obstacles = self._probe_obstacles_ahead()
         return {
             "pos": self.data.qpos[0:3].copy(),
             "yaw": float(rpy[2]),
@@ -297,6 +298,127 @@ class Sim:
             "body_height": float(self.data.qpos[2]),
             "foot_contacts": self._foot_contacts(),
             "terrain_ahead": terrain,
+            "obstacles_ahead": obstacles,
+        }
+
+    def _robot_geom_set(self) -> set[int]:
+        """Geom IDs that belong to the robot (anything in the trunk subtree).
+
+        ``_raycast_terrain_z`` populates a coarser set ("everything except
+        world") which is fine for downward rays but wrong for horizontal
+        ones — it treats scene props (boxes, barrels, stairs) as robot too.
+        This set is precise: only the kinematic chain rooted at ``trunk``.
+        """
+        if not hasattr(self, "_robot_geom_id_set"):
+            trunk_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_BODY, "trunk")
+            robot_bodies: set[int] = set()
+            if trunk_id >= 0:
+                for i in range(self.model.nbody):
+                    bid = i
+                    # walk up parents until reaching world (0)
+                    while bid > 0:
+                        if bid == trunk_id:
+                            robot_bodies.add(i)
+                            break
+                        bid = int(self.model.body_parentid[bid])
+            geom_ids: set[int] = set()
+            for gid in range(self.model.ngeom):
+                if int(self.model.geom_bodyid[gid]) in robot_bodies:
+                    geom_ids.add(gid)
+            self._robot_geom_id_set = geom_ids
+        return self._robot_geom_id_set
+
+    def _cast_external_ray(self, origin: np.ndarray, direction: np.ndarray,
+                           max_range: float, max_skips: int = 6) -> float | None:
+        """Cast a ray that ignores robot geoms.
+
+        ``mj_ray`` returns only the first hit, so when that hit is on the
+        robot itself we have to nudge the origin past it and re-cast.
+        Returns the distance from the *original* origin to the first
+        non-robot hit, or None if nothing was found within ``max_range``.
+        """
+        robot_geoms = self._robot_geom_set()
+        cur_origin = origin.astype(np.float64).copy()
+        travelled = 0.0
+        for _ in range(max_skips):
+            geomid = np.array([-1], dtype=np.int32)
+            dist = mujoco.mj_ray(
+                self.model, self.data, cur_origin, direction,
+                None, 1, -1, geomid,
+            )
+            if dist < 0:
+                return None
+            if travelled + dist > max_range:
+                return None
+            gid = int(geomid[0])
+            if gid < 0 or gid not in robot_geoms:
+                return float(travelled + dist)
+            # Robot self-hit: advance origin a hair past the hit and try again.
+            step = float(dist) + 1e-3
+            cur_origin = cur_origin + direction * step
+            travelled += step
+        return None
+
+    def _probe_obstacles_ahead(self, max_range: float = 1.5) -> dict:
+        """Forward obstacle probe at body height.
+
+        Casts horizontal rays from a point in front of the robot's head, at
+        three lateral offsets (left / centre / right). Returns the nearest
+        non-robot geom hit per direction. Used by stack adapters to detect
+        boxes / barrels / walls — anything ``_probe_terrain_ahead`` misses
+        because it only looks down.
+
+        Returns a dict::
+
+            {
+                "left_m":   distance to nearest hit in the left ray,  or None,
+                "center_m": same for the centre ray,
+                "right_m":  same for the right ray,
+                "max_range_m": max raycast range,
+                "min_m":   the smallest of (left, center, right), or None,
+                "side":   "left" | "center" | "right" — which ray is closest,
+            }
+        """
+        pos = self.data.qpos[0:3].copy()
+        yaw = float(_rpy(self.data.qpos[3:7])[2])
+
+        # Forward — head faces -x in body frame, so add pi.
+        fwd = np.array([math.cos(yaw + math.pi),
+                        math.sin(yaw + math.pi), 0.0], dtype=np.float64)
+        # Right of the robot (when facing -x with up=+z), pointing in +y.
+        right = np.array([math.cos(yaw + math.pi - math.pi / 2),
+                          math.sin(yaw + math.pi - math.pi / 2), 0.0],
+                         dtype=np.float64)
+
+        # Origin: well past the trunk so the first hit isn't the robot itself.
+        # Body height ~0.20m so we see low obstacles like boxes (15cm) and
+        # mid-height ones like barrels (40cm).
+        origin_xy = pos[:2] + fwd[:2] * 0.30
+        origin_z = 0.20
+
+        # Lateral offsets: -0.15 = robot's left, +0.15 = robot's right.
+        results: dict[str, float | None] = {}
+        for label, lat in (("left", -0.15), ("center", 0.0), ("right", 0.15)):
+            ox = float(origin_xy[0]) + right[0] * lat
+            oy = float(origin_xy[1]) + right[1] * lat
+            ray_from = np.array([ox, oy, origin_z], dtype=np.float64)
+            results[label] = self._cast_external_ray(ray_from, fwd, max_range)
+
+        finite = {k: v for k, v in results.items() if v is not None}
+        if finite:
+            side = min(finite, key=finite.get)
+            min_m = finite[side]
+        else:
+            side = "center"
+            min_m = None
+
+        return {
+            "left_m": results["left"],
+            "center_m": results["center"],
+            "right_m": results["right"],
+            "max_range_m": max_range,
+            "min_m": min_m,
+            "side": side,
         }
 
     def _probe_terrain_ahead(self) -> dict:
@@ -362,26 +484,20 @@ class Sim:
 
     def _raycast_terrain_z(self, x: float, y: float, z_start: float,
                            ray_dir: np.ndarray) -> float | None:
-        """Cast a ray downward, skip robot geoms, return terrain z-hit."""
-        if not hasattr(self, '_robot_body_ids'):
-            self._robot_body_ids = set()
-            for i in range(self.model.nbody):
-                name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_BODY, i)
-                if name and name != "world":
-                    self._robot_body_ids.add(i)
+        """Cast a ray downward, skip robot geoms, return terrain z-hit.
 
+        Uses the same precise robot-geom set as ``_probe_obstacles_ahead`` so
+        scenes whose terrain is wrapped in ``<body>`` tags (not bare geoms on
+        ``world``) are still detected correctly.
+        """
         ray_from = np.array([x, y, z_start], dtype=np.float64)
-        geomid = np.array([-1], dtype=np.int32)
-        dist = mujoco.mj_ray(
-            self.model, self.data, ray_from, ray_dir,
-            None, 1, -1, geomid,
-        )
-        if dist < 0:
+        direction = ray_dir.astype(np.float64)
+        # max_range generous so the cast reaches the floor from far above
+        max_range = 50.0
+        dist = self._cast_external_ray(ray_from, direction, max_range)
+        if dist is None:
             return None
-        gid = int(geomid[0])
-        if gid >= 0 and self.model.geom_bodyid[gid] in self._robot_body_ids:
-            return None
-        return z_start + ray_dir[2] * dist
+        return z_start + direction[2] * dist
 
     def run_reactive(self, memory_fn, vla_fn, goal_fn,
                      cam_distance: float = 2.5, cam_elevation: float = -15,

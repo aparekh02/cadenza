@@ -1,0 +1,263 @@
+<mujoco model="go1_stairs_navigation">
+  <!--
+    Stairs navigation course for the SmolVLA stack demo.
+
+    Forward direction is -x (cadenza convention: head/front faces -x).
+    Robot starts at the origin facing the course.
+
+    Layout (along -x axis, distances in metres):
+       0.0 ..  -0.8  : flat start area (concrete pad)
+      -0.8 ..  -2.0  : obstacle field — two boxes the robot must dodge
+                       around, off-centre to force lateral steering
+      -2.0 ..  -3.0  : clear approach to the base of the stairs
+      -3.0 ..  -4.6  : 4 stair steps, 0.40m deep × 0.08m rise each
+                       (within Go1's climb_step capability of ~20cm)
+      -4.6 ..  -6.0  : elevated platform (top deck), 32cm above ground
+       at -5.5      : GOAL BEACON — tall green column with a flag on top
+                       and an emissive yellow pad on the deck
+  -->
+
+  <compiler angle="radian" autolimits="true"/>
+  <option gravity="0 0 -9.81" timestep="0.002" iterations="50" tolerance="1e-10"
+          cone="elliptic" impratio="100"/>
+
+  <default>
+    <joint damping="2.0" frictionloss="0.2" armature="0.01"/>
+    <geom contype="1" conaffinity="1" condim="3"
+          friction="0.6 0.02 0.001" solref="0.005 1" solimp="0.98 0.99 0.001"/>
+    <position kp="300" ctrlrange="-3.14 3.14" forcelimited="true" forcerange="-33.5 33.5"/>
+    <default class="hip_joint">
+      <joint damping="1.0" frictionloss="0.2" armature="0.01"/>
+    </default>
+    <default class="foot">
+      <geom condim="6" friction="0.8 0.02 0.01"
+            solimp="0.015 1 0.023" solref="0.005 1"/>
+    </default>
+  </default>
+
+  <asset>
+    <texture name="sky" type="skybox" builtin="gradient"
+             rgb1="0.45 0.60 0.85" rgb2="0.75 0.85 0.95"
+             width="512" height="512" mark="random" markrgb="1 1 1"
+             random="0.01"/>
+    <texture name="ground_tex" type="2d" builtin="flat"
+             rgb1="0.72 0.70 0.66" rgb2="0.68 0.66 0.62"
+             width="512" height="512"/>
+    <material name="ground_mat" texture="ground_tex" texrepeat="12 12"
+              texuniform="true" reflectance="0.02" rgba="0.75 0.73 0.70 1"/>
+
+    <material name="cardboard"  rgba="0.72 0.53 0.30 1" reflectance="0.02"/>
+    <material name="barrel"     rgba="0.55 0.18 0.18 1" reflectance="0.20"/>
+    <material name="step_mat"   rgba="0.58 0.55 0.50 1" reflectance="0.05"/>
+    <material name="deck_mat"   rgba="0.50 0.46 0.40 1" reflectance="0.04"/>
+    <material name="goal_pad"   rgba="0.95 0.85 0.05 1" reflectance="0.30"
+              emission="0.25"/>
+    <material name="beacon"     rgba="0.10 0.85 0.35 1" reflectance="0.10"
+              emission="0.20"/>
+    <material name="flag"       rgba="0.95 0.20 0.20 1" reflectance="0.10"/>
+    <material name="body_mat"   rgba="0.15 0.15 0.18 1" reflectance="0.05"/>
+    <material name="leg_mat"    rgba="0.12 0.12 0.15 1" reflectance="0.03"/>
+  </asset>
+
+  <worldbody>
+    <!-- Lighting -->
+    <light name="sun" pos="3 3 12" dir="-0.3 -0.2 -1" diffuse="1.2 1.15 1.0"
+           specular="0.5 0.5 0.4" castshadow="true"/>
+    <light name="ambient" pos="0 0 10" dir="0 0 -1" diffuse="0.35 0.38 0.45"
+           specular="0 0 0" castshadow="false"/>
+    <light name="fill"   pos="-5 -3 6" dir="0.3 0.2 -1" diffuse="0.25 0.25 0.30"
+           castshadow="false"/>
+
+    <!-- Ground plane -->
+    <geom name="floor" type="plane" size="20 20 0.1" material="ground_mat"
+          condim="6" friction="0.8 0.02 0.01"/>
+
+    <!-- ══ Obstacle 1 — cardboard box, slightly left of centerline ══ -->
+    <body name="obstacle_box" pos="-1.2 0.18 0.15">
+      <geom type="box" size="0.15 0.15 0.15" material="cardboard"
+            mass="5.0" friction="0.7 0.02 0.001"/>
+      <geom type="box" size="0.151 0.03 0.003" pos="0 0 0.153"
+            rgba="0.85 0.75 0.55 1" contype="0" conaffinity="0"/>
+    </body>
+
+    <!-- ══ Obstacle 2 — barrel, slightly right of centerline ══ -->
+    <body name="obstacle_barrel" pos="-1.9 -0.20 0.20">
+      <geom type="cylinder" size="0.18 0.20" material="barrel"
+            mass="12.0" friction="0.7 0.02 0.001"/>
+      <geom type="cylinder" size="0.181 0.03" pos="0 0 0.10"
+            rgba="0.10 0.10 0.10 1" contype="0" conaffinity="0"/>
+      <geom type="cylinder" size="0.181 0.03" pos="0 0 -0.12"
+            rgba="0.10 0.10 0.10 1" contype="0" conaffinity="0"/>
+    </body>
+
+    <!-- ══ Stairs — 4 steps, 0.40m deep × 0.08m rise ════════════════ -->
+    <!-- Each step is a static box. Cumulative rise: 0.08, 0.16, 0.24, 0.32 -->
+    <body name="step_1" pos="-3.2 0 0.04">
+      <geom type="box" size="0.20 0.80 0.04" material="step_mat"
+            friction="0.9 0.02 0.001"/>
+    </body>
+    <body name="step_2" pos="-3.6 0 0.08">
+      <geom type="box" size="0.20 0.80 0.08" material="step_mat"
+            friction="0.9 0.02 0.001"/>
+    </body>
+    <body name="step_3" pos="-4.0 0 0.12">
+      <geom type="box" size="0.20 0.80 0.12" material="step_mat"
+            friction="0.9 0.02 0.001"/>
+    </body>
+    <body name="step_4" pos="-4.4 0 0.16">
+      <geom type="box" size="0.20 0.80 0.16" material="step_mat"
+            friction="0.9 0.02 0.001"/>
+    </body>
+
+    <!-- ══ Top deck — extends from -4.6 to -6.4, 32cm above ground ══ -->
+    <body name="top_deck" pos="-5.5 0 0.16">
+      <geom type="box" size="0.90 0.80 0.16" material="deck_mat"
+            friction="0.9 0.02 0.001"/>
+    </body>
+
+    <!-- ══ Goal beacon at the top — pad + tall column + flag ════════ -->
+    <!-- The yellow pad sits flush on the deck so the robot's camera can see it -->
+    <geom name="goal_pad_disc" type="cylinder" size="0.30 0.005"
+          pos="-5.5 0 0.328" material="goal_pad"
+          contype="0" conaffinity="0"/>
+    <!-- 1.4m tall green column rising from the deck — strong visual landmark -->
+    <geom name="goal_beacon" type="cylinder" size="0.05 0.70"
+          pos="-5.5 0 1.03" material="beacon"
+          contype="0" conaffinity="0"/>
+    <!-- Red flag on top of the beacon -->
+    <geom name="goal_flag" type="box" size="0.18 0.02 0.10"
+          pos="-5.32 0 1.65" material="flag"
+          contype="0" conaffinity="0"/>
+
+    <!-- ══ Robot ════════════════════════════════════════════════════ -->
+    <body name="trunk" pos="0 0 0.27">
+      <freejoint name="root"/>
+      <geom name="trunk" type="box" size="0.1881 0.0475 0.048"
+            mass="9.041" material="body_mat"/>
+      <site name="imu" pos="0 0 0" size="0.005"/>
+      <geom name="head_marker" type="sphere" size="0.03" pos="-0.22 0 0.04"
+            rgba="0.1 0.95 0.3 1" contype="0" conaffinity="0" mass="0.001"/>
+
+      <!-- Forward-facing camera (head, looks toward -x) — used by VLA -->
+      <camera name="forward" pos="-0.22 0 0.06" euler="1.5708 -1.5708 0"
+              fovy="70"/>
+
+      <!-- FL leg -->
+      <body name="FL_hip" pos="0.1881 0.0472 0">
+        <joint name="FL_hip_joint" type="hinge" axis="1 0 0"
+               range="-0.863 0.863" class="hip_joint"/>
+        <geom type="capsule" size="0.044 0.020" pos="0 0.040 0"
+              euler="1.5708 0 0" mass="0.591" material="body_mat"/>
+        <body name="FL_thigh" pos="0 0.0838 0">
+          <joint name="FL_thigh_joint" type="hinge" axis="0 -1 0"
+                 range="-0.686 4.501"/>
+          <geom type="capsule" size="0.025" fromto="0 0 0 0 0 -0.213"
+                mass="0.921" material="leg_mat" rgba="0.30 0.55 0.90 1"/>
+          <body name="FL_calf" pos="0 0 -0.213">
+            <joint name="FL_calf_joint" type="hinge" axis="0 -1 0"
+                   range="-2.818 -0.888"/>
+            <geom type="capsule" size="0.019" fromto="0 0 0 0 0 -0.213"
+                  mass="0.135" material="leg_mat"/>
+            <body name="FL_foot" pos="0 0 -0.213">
+              <geom name="FL_foot_geom" type="sphere" size="0.0165"
+                    mass="0.06" rgba="0.30 0.55 0.90 1" class="foot"/>
+            </body>
+          </body>
+        </body>
+      </body>
+
+      <!-- FR leg -->
+      <body name="FR_hip" pos="0.1881 -0.0472 0">
+        <joint name="FR_hip_joint" type="hinge" axis="-1 0 0"
+               range="-0.863 0.863" class="hip_joint"/>
+        <geom type="capsule" size="0.044 0.020" pos="0 -0.040 0"
+              euler="1.5708 0 0" mass="0.591" material="body_mat"/>
+        <body name="FR_thigh" pos="0 -0.0838 0">
+          <joint name="FR_thigh_joint" type="hinge" axis="0 -1 0"
+                 range="-0.686 4.501"/>
+          <geom type="capsule" size="0.025" fromto="0 0 0 0 0 -0.213"
+                mass="0.921" material="leg_mat" rgba="0.90 0.33 0.33 1"/>
+          <body name="FR_calf" pos="0 0 -0.213">
+            <joint name="FR_calf_joint" type="hinge" axis="0 -1 0"
+                   range="-2.818 -0.888"/>
+            <geom type="capsule" size="0.019" fromto="0 0 0 0 0 -0.213"
+                  mass="0.135" material="leg_mat"/>
+            <body name="FR_foot" pos="0 0 -0.213">
+              <geom name="FR_foot_geom" type="sphere" size="0.0165"
+                    mass="0.06" rgba="0.90 0.33 0.33 1" class="foot"/>
+            </body>
+          </body>
+        </body>
+      </body>
+
+      <!-- RL leg -->
+      <body name="RL_hip" pos="-0.1881 0.0472 0">
+        <joint name="RL_hip_joint" type="hinge" axis="1 0 0"
+               range="-0.863 0.863" class="hip_joint"/>
+        <geom type="capsule" size="0.044 0.020" pos="0 0.040 0"
+              euler="1.5708 0 0" mass="0.591" material="body_mat"/>
+        <body name="RL_thigh" pos="0 0.0838 0">
+          <joint name="RL_thigh_joint" type="hinge" axis="0 -1 0"
+                 range="-0.686 4.501"/>
+          <geom type="capsule" size="0.025" fromto="0 0 0 0 0 -0.213"
+                mass="0.921" material="leg_mat" rgba="0.30 0.90 0.75 1"/>
+          <body name="RL_calf" pos="0 0 -0.213">
+            <joint name="RL_calf_joint" type="hinge" axis="0 -1 0"
+                   range="-2.818 -0.888"/>
+            <geom type="capsule" size="0.019" fromto="0 0 0 0 0 -0.213"
+                  mass="0.135" material="leg_mat"/>
+            <body name="RL_foot" pos="0 0 -0.213">
+              <geom name="RL_foot_geom" type="sphere" size="0.0165"
+                    mass="0.06" rgba="0.30 0.90 0.75 1" class="foot"/>
+            </body>
+          </body>
+        </body>
+      </body>
+
+      <!-- RR leg -->
+      <body name="RR_hip" pos="-0.1881 -0.0472 0">
+        <joint name="RR_hip_joint" type="hinge" axis="-1 0 0"
+               range="-0.863 0.863" class="hip_joint"/>
+        <geom type="capsule" size="0.044 0.020" pos="0 -0.040 0"
+              euler="1.5708 0 0" mass="0.591" material="body_mat"/>
+        <body name="RR_thigh" pos="0 -0.0838 0">
+          <joint name="RR_thigh_joint" type="hinge" axis="0 -1 0"
+                 range="-0.686 4.501"/>
+          <geom type="capsule" size="0.025" fromto="0 0 0 0 0 -0.213"
+                mass="0.921" material="leg_mat" rgba="0.90 0.65 0.30 1"/>
+          <body name="RR_calf" pos="0 0 -0.213">
+            <joint name="RR_calf_joint" type="hinge" axis="0 -1 0"
+                   range="-2.818 -0.888"/>
+            <geom type="capsule" size="0.019" fromto="0 0 0 0 0 -0.213"
+                  mass="0.135" material="leg_mat"/>
+            <body name="RR_foot" pos="0 0 -0.213">
+              <geom name="RR_foot_geom" type="sphere" size="0.0165"
+                    mass="0.06" rgba="0.90 0.65 0.30 1" class="foot"/>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <position name="FL_hip"   joint="FL_hip_joint"   ctrlrange="-0.80 0.80"   forcelimited="true" forcerange="-23.7 23.7"/>
+    <position name="FL_thigh" joint="FL_thigh_joint" ctrlrange="-0.50 2.50"   forcelimited="true" forcerange="-23.7 23.7"/>
+    <position name="FL_calf"  joint="FL_calf_joint"  ctrlrange="-2.75 -0.60"  forcelimited="true" forcerange="-35.55 35.55"/>
+    <position name="FR_hip"   joint="FR_hip_joint"   ctrlrange="-0.80 0.80"   forcelimited="true" forcerange="-23.7 23.7"/>
+    <position name="FR_thigh" joint="FR_thigh_joint" ctrlrange="-0.50 2.50"   forcelimited="true" forcerange="-23.7 23.7"/>
+    <position name="FR_calf"  joint="FR_calf_joint"  ctrlrange="-2.75 -0.60"  forcelimited="true" forcerange="-35.55 35.55"/>
+    <position name="RL_hip"   joint="RL_hip_joint"   ctrlrange="-0.80 0.80"   forcelimited="true" forcerange="-23.7 23.7"/>
+    <position name="RL_thigh" joint="RL_thigh_joint" ctrlrange="-0.50 2.50"   forcelimited="true" forcerange="-23.7 23.7"/>
+    <position name="RL_calf"  joint="RL_calf_joint"  ctrlrange="-2.75 -0.60"  forcelimited="true" forcerange="-35.55 35.55"/>
+    <position name="RR_hip"   joint="RR_hip_joint"   ctrlrange="-0.80 0.80"   forcelimited="true" forcerange="-23.7 23.7"/>
+    <position name="RR_thigh" joint="RR_thigh_joint" ctrlrange="-0.50 2.50"   forcelimited="true" forcerange="-23.7 23.7"/>
+    <position name="RR_calf"  joint="RR_calf_joint"  ctrlrange="-2.75 -0.60"  forcelimited="true" forcerange="-35.55 35.55"/>
+  </actuator>
+
+  <keyframe>
+    <key name="home" qpos="0 0 0.27 1 0 0 0
+                           0 0.9 -1.8  0 0.9 -1.8
+                           0 0.9 -1.8  0 0.9 -1.8"/>
+  </keyframe>
+</mujoco>
