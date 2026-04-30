@@ -18,9 +18,7 @@ cadenza.stack.register_world_model(
 
 cadenza.stack.run(
     robot="go1",
-    goal=("walk_forward then walk_forward then walk_forward "
-          "then climb_step then climb_step then climb_step then climb_step "
-          "then walk_forward then sit"),
+    goal="reach the green beacon at the top of the stairs and sit",
     target=(-5.5, 0.0),
     xml_path="examples/smolvla-test/stairs_scene.xml",
     modalities=[DepthAnythingV2Small()],
